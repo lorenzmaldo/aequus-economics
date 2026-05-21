@@ -22,8 +22,6 @@
   footer{padding:.7rem 2rem;background:#fff;border-top:1px solid #ddd;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:#666;flex-wrap:wrap;gap:.5rem}
   footer a{color:#d7301f;text-decoration:none;font-weight:600}
   footer a:hover{text-decoration:underline}
-
-  /* ── Aequus nav ── */
   .ae-nav{display:flex;align-items:center;gap:8px;padding:0 1rem;height:36px;background:#0f2040;flex-shrink:0}
   .ae-nav-home{padding:3px 11px;border-radius:10px;border:1px solid rgba(255,255,255,.25);font-size:11px;font-weight:500;color:#fff;background:transparent;text-decoration:none;white-space:nowrap;transition:background .12s}
   .ae-nav-home:hover{background:rgba(255,255,255,.15)}
@@ -109,9 +107,6 @@
     event.target.classList.add('active');
   }
 </script>
-<script>
-function aeToggleNav(btn){btn.nextElementSibling.classList.toggle('open')}
-document.addEventListener('click',function(e){if(!e.target.closest('.ae-nav-dd-wrap'))document.querySelectorAll('.ae-nav-dd').forEach(function(d){d.classList.remove('open')})});
-</script>
+<script>function aeToggleNav(btn){btn.nextElementSibling.classList.toggle('open')}document.addEventListener('click',function(e){if(!e.target.closest('.ae-nav-dd-wrap'))document.querySelectorAll('.ae-nav-dd').forEach(function(d){d.classList.remove('open')})});</script>
 </body>
 </html>

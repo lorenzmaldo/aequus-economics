@@ -164,6 +164,7 @@ canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
       <button class="cbtn"        data-g="q2-sm" data-w="7">7d</button>
       <button class="cbtn"        data-g="q2-sm" data-w="15">15d</button>
       <button class="cbtn"        data-g="q2-sm" data-w="30">30d</button>
+      <button class="cbtn"        data-g="q2-sm" data-w="0">Monthly</button>
     </div>
     <div class="chart-area"><canvas id="ch-q2"></canvas></div>
   </div>
@@ -236,7 +237,13 @@ function rgba(hex,a){
 }
 
 // ── Data helpers ──────────────────────────────────────────────────────────────
-function src() {
+function src(monthly=false) {
+  if (monthly) {
+    let d = D.hyd_monthly;
+    if (S.dateFrom) d = d.filter(r => r.date >= S.dateFrom);
+    if (S.dateTo)   d = d.filter(r => r.date <= S.dateTo);
+    return d;
+  }
   let d = D.hyd_daily;
   if (S.dateFrom) d = d.filter(r => r.date >= S.dateFrom);
   if (S.dateTo)   d = d.filter(r => r.date <= S.dateTo);
@@ -380,8 +387,9 @@ function buildQ1() {
 // ══════════════════════════════════════════════════════════════════════════════
 function buildQ2() {
   kill('q2');
-  const hyd = src();
-  const w   = S.q2_sm;
+  const isMonthly = (S.q2_sm === 0);
+  const hyd = isMonthly ? src(true) : src();
+  const w   = isMonthly ? 1 : S.q2_sm;  // monthly = no additional smoothing
   const norm= S.q2_view==='norm';
   const sel = S.q2_ser;
 
