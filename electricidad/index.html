@@ -126,7 +126,10 @@
     </div>
   </div>
 
-  <button class="tab-btn active" data-target="panel-animation">
+  <button class="tab-btn active" data-target="panel-celec">
+    <span class="tab-icon">📈</span> Paute Complex
+  </button>
+  <button class="tab-btn" data-target="panel-animation">
     <span class="tab-icon">🗺</span> Animation
   </button>
   <button class="tab-btn" data-target="panel-heatmaps">
@@ -135,20 +138,22 @@
   <button class="tab-btn" data-target="panel-annual">
     <span class="tab-icon">📅</span> Annual Series
   </button>
-  <button class="tab-btn" data-target="panel-celec">
-    <span class="tab-icon">📈</span> Paute Complex
-  </button>
 
   <div class="spacer"></div>
   <div class="brand-right">WorldClim CRU-TS 4.09 &nbsp;·&nbsp; ARCONEL 2025 &nbsp;·&nbsp; NOAA ONI</div>
 </nav>
 
-<!-- ── Panel 1: Animation ── -->
-<div class="tab-panel active" id="panel-animation">
+<!-- ── Panel 1: Paute Complex (landing) ── -->
+<div class="tab-panel active" id="panel-celec">
+  <iframe src="celec_dashboard.html" id="celec-frame" style="border:none;width:100%;display:block;"></iframe>
+</div>
+
+<!-- ── Panel 2: Animation ── -->
+<div class="tab-panel" id="panel-animation">
   <iframe src="el_nino_animation.html" id="anim-frame"></iframe>
 </div>
 
-<!-- ── Panel 2: Heatmaps ── -->
+<!-- ── Panel 3: Heatmaps ── -->
 <div class="tab-panel" id="panel-heatmaps">
 
   <!-- El Niño heatmap -->
@@ -186,11 +191,6 @@
 <!-- ── Panel 3: Annual Series ── -->
 <div class="tab-panel" id="panel-annual">
   <iframe src="annual_animation.html" id="annual-frame"></iframe>
-</div>
-
-<!-- ── Panel 4: Paute Complex ── -->
-<div class="tab-panel" id="panel-celec">
-  <iframe src="celec_dashboard.html" id="celec-frame" style="border:none;width:100%;display:block;"></iframe>
 </div>
 
 <!-- ── Lightbox ── -->
