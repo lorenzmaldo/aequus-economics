@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aequus Economics</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #f2f2f2;
+      color: #1d1d1b;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    main { flex: 1; }
+
+    /* ── Header ── */
+    header {
+      background: #0a3373 url('./assets/header-bg.png') center/cover no-repeat;
+      color: #fff;
+      padding: 48px 32px 40px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    header p {
+      margin-top: 8px;
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.72);
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Main grid ── */
+    main {
+      max-width: 1100px;
+      margin: 48px auto;
+      padding: 0 24px;
+      width: 100%;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e0e0e0;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: box-shadow 0.18s, transform 0.18s;
+    }
+
+    .card:hover {
+      box-shadow: 0 6px 24px rgba(10, 51, 115, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .card-icon {
+      font-size: 1.6rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .badge-live    { background: #d1f0e0; color: #1a7a45; }
+    .badge-wip     { background: #fef3cd; color: #8a6200; }
+    .badge-planned { background: #e8edf4; color: #5a6a82; }
+
+    .card h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #0a3373;
+      line-height: 1.3;
+    }
+
+    .card p {
+      font-size: 0.875rem;
+      color: #1d1d1b;
+      line-height: 1.55;
+      flex: 1;
+    }
+
+    .card a.btn {
+      display: inline-block;
+      margin-top: 4px;
+      padding: 9px 20px;
+      background: #0a3373;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-align: center;
+      transition: background 0.15s;
+    }
+
+    .card a.btn:hover { background: #082a5e; }
+
+    .card a.btn.disabled {
+      background: #c8d0dc;
+      color: #8a96a8;
+      pointer-events: none;
+      cursor: default;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 40px 16px;
+      background: #f2f2f2;
+    }
+
+    footer img {
+      width: 360px;
+      max-width: 80vw;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Aequus Economics</h1>
+  <p><strong><em>Live</em></strong></p>
+</header>
+
+<main>
+  <div class="grid">
+
+    <!-- ── Homicidios Ecuador ── -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">🗺️</span>
+        <span class="badge badge-live">Live</span>
+      </div>
+      <h2>Homicidios Ecuador</h2>
+      <p>Cumulative homicide map animation by province. Auto-updated from official data via GitHub Actions.</p>
+      <a class="btn" href="./homicidios/index.html">View dashboard</a>
+    </div>
+
+    <!-- ── Deuda Interna ── -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">📊</span>
+        <span class="badge badge-live">Live</span>
+      </div>
+      <h2>Deuda Interna Ecuador</h2>
+      <p>Ecuador domestic debt dashboard: primary issuance stacked bars, yield curve comparisons, and tenor time series.</p>
+      <a class="btn" href="./deuda-interna/index.html">View dashboard</a>
+    </div>
+
+    <!-- ── Electricidad ── -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">⚡</span>
+        <span class="badge badge-live">Live</span>
+      </div>
+      <h2>Electricidad — CCS</h2>
+      <p>Daily streamflow and reservoir levels for Ecuador's main hydro complexes. Sourced from CELEC operational bulletins.</p>
+      <a class="btn" href="./electricidad/index.html">View dashboard</a>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <img src="./assets/logo-completo.png" alt="Aequus Economics" />
+</footer>
+
+</body>
+</html>

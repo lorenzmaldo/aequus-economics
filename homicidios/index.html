@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Homicidios Intencionales en Ecuador</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f4f4f4;color:#1a1a1a}
+  header{background:#7f0000;color:#fff;padding:1.25rem 2rem}
+  header h1{font-size:1.4rem;font-weight:700}
+  header p{font-size:.85rem;opacity:.85;margin-top:.25rem}
+  .stats{display:flex;gap:2.5rem;padding:.9rem 2rem;background:#fff;border-bottom:1px solid #ddd;flex-wrap:wrap}
+  .stat strong{display:block;font-size:1.35rem;color:#d7301f}
+  .stat span{font-size:.75rem;color:#666;text-transform:uppercase;letter-spacing:.04em}
+  .tabs{display:flex;gap:0;padding:0 2rem;background:#fff;border-bottom:2px solid #ddd}
+  .tab{padding:.6rem 1.2rem;font-size:.85rem;font-weight:600;color:#666;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+  .tab.active{color:#d7301f;border-bottom-color:#d7301f}
+  .map-wrap{width:100%;height:calc(100vh - 185px)}
+  .map-wrap iframe{width:100%;height:100%;border:none;display:none}
+  .map-wrap iframe.active{display:block}
+  footer{padding:.7rem 2rem;background:#fff;border-top:1px solid #ddd;display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:#666;flex-wrap:wrap;gap:.5rem}
+  footer a{color:#d7301f;text-decoration:none;font-weight:600}
+  footer a:hover{text-decoration:underline}
+
+  /* ── Aequus nav ── */
+  .ae-nav{display:flex;align-items:center;gap:8px;padding:0 1rem;height:36px;background:#0f2040;flex-shrink:0}
+  .ae-nav-home{padding:3px 11px;border-radius:10px;border:1px solid rgba(255,255,255,.25);font-size:11px;font-weight:500;color:#fff;background:transparent;text-decoration:none;white-space:nowrap;transition:background .12s}
+  .ae-nav-home:hover{background:rgba(255,255,255,.15)}
+  .ae-nav-dd-wrap{position:relative}
+  .ae-nav-dd-btn{padding:3px 11px;border-radius:10px;border:1px solid rgba(255,255,255,.25);font-size:11px;font-weight:500;color:#fff;background:transparent;cursor:pointer;white-space:nowrap;transition:background .12s}
+  .ae-nav-dd-btn:hover{background:rgba(255,255,255,.15)}
+  .ae-nav-dd{display:none;position:absolute;top:calc(100% + 6px);left:0;background:#fff;border:1px solid #dde3ec;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:9999;min-width:210px;overflow:hidden}
+  .ae-nav-dd.open{display:block}
+  .ae-nav-dd a{display:block;padding:9px 16px;font-size:12px;color:#1a2332;text-decoration:none;transition:background .1s}
+  .ae-nav-dd a:hover{background:#f0f4fa}
+  .ae-nav-dd a.ae-current{font-weight:700;color:#0f2040;background:#e8edf4}
+</style>
+</head>
+<body>
+<nav class="ae-nav">
+  <a href="../index.html" class="ae-nav-home">&#8592; Menu</a>
+  <div class="ae-nav-dd-wrap">
+    <button class="ae-nav-dd-btn" onclick="aeToggleNav(this)">Dashboards &#9660;</button>
+    <div class="ae-nav-dd">
+      <a href="../homicidios/index.html" class="ae-current">&#128506;&#xFE0F; Homicidios Ecuador</a>
+      <a href="../deuda-interna/index.html">&#128202; Deuda Interna</a>
+      <a href="../electricidad/index.html">&#9889; Electricidad &mdash; CCS</a>
+    </div>
+  </div>
+</nav>
+<header>
+  <h1>Homicidios Intencionales en Ecuador</h1>
+  <p>Distribucion geografica acumulada por ciudad &mdash; 2021-01 – 2026-04</p>
+</header>
+<div class="stats">
+  <div class="stat"><strong>34,750</strong><span>eventos registrados</span></div>
+  <div class="stat"><strong>64</strong><span>meses</span></div>
+  <div class="stat"><strong>2021-01 – 2026-04</strong><span>periodo</span></div>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="show('interactive')">Mapa interactivo</div>
+  <div class="tab" onclick="show('heatmap')">Mapa de calor</div>
+  <div class="tab" onclick="show('chart')">Grafico anual</div>
+  <div class="tab" onclick="show('monthly')">Mensual</div>
+  <div class="tab" onclick="show('stacked')">Por Provincia</div>
+</div>
+<div class="map-wrap">
+  <iframe id="interactive" class="active" src="interactive.html" title="Mapa interactivo con cursor de tiempo"></iframe>
+  <iframe id="heatmap" src="map.html" title="Mapa de calor acumulado"></iframe>
+  <div id="chart" style="display:none;width:100%;height:100%;background:white;overflow:auto;text-align:center;padding:2rem 2rem 1rem">
+    <img src="annual_chart.png" style="max-width:100%;height:auto;box-shadow:0 2px 8px rgba(0,0,0,.15)" alt="Grafico anual">
+    <div style="margin-top:1.2rem">
+      <a href="resumen_mensual.xlsx" download
+         style="display:inline-block;background:#7f0000;color:white;text-decoration:none;font-weight:600;font-size:.85rem;padding:.55rem 1.4rem;border-radius:4px;letter-spacing:.03em">
+        Descargar base de datos mensual (.xlsx)
+      </a>
+      <p style="margin-top:.6rem;font-size:.75rem;color:#888">
+        Provincia &middot; Sub-zona &middot; Canton &middot; Homicidios mensuales &mdash; 2014 a la fecha
+      </p>
+    </div>
+  </div>
+  <iframe id="monthly" src="monthly_chart.html" title="Grafico mensual por año"></iframe>
+  <div id="stacked" style="display:none;width:100%;height:100%;background:white;overflow:auto;text-align:center;padding:2rem 2rem 1rem">
+    <img src="provincias_stacked.png" style="max-width:100%;height:auto;box-shadow:0 2px 8px rgba(0,0,0,.15)" alt="Homicidios por provincia">
+    <div style="margin-top:1.2rem">
+      <a href="provincias_stacked.xlsx" download
+         style="display:inline-block;background:#7f0000;color:white;text-decoration:none;font-weight:600;font-size:.85rem;padding:.55rem 1.4rem;border-radius:4px;letter-spacing:.03em">
+        Descargar datos (.xlsx)
+      </a>
+      <p style="margin-top:.6rem;font-size:.75rem;color:#888">
+        Provincias que explican el 90% de homicidios &mdash; Enero 2024 a Abril 2026
+      </p>
+    </div>
+  </div>
+</div>
+<footer>
+  <span>Fuente: Ministerio del Interior del Ecuador</span>
+  <a href="animation.gif" download>Descargar animacion GIF</a>
+</footer>
+<script>
+  function show(id){
+    document.querySelectorAll('.map-wrap iframe, .map-wrap div[id]').forEach(el=>{
+      el.classList.remove('active'); el.style.display='none';
+    });
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    var el=document.getElementById(id);
+    el.style.display='block'; el.classList.add('active');
+    event.target.classList.add('active');
+  }
+</script>
+<script>
+function aeToggleNav(btn){btn.nextElementSibling.classList.toggle('open')}
+document.addEventListener('click',function(e){if(!e.target.closest('.ae-nav-dd-wrap'))document.querySelectorAll('.ae-nav-dd').forEach(function(d){d.classList.remove('open')})});
+</script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ENSO &amp; Ecuador Electricity Grid — Aequus Economics</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',Arial,sans-serif;font-weight:300;background:#F5F6F8;color:#1A1A2E;height:100vh;display:flex;flex-direction:column}
+
+  /* ── Nav bar ── */
+  #navbar{
+    background:#fff;border-bottom:1px solid #E0E0E0;
+    display:flex;align-items:stretch;height:52px;flex-shrink:0;
+    padding:0 24px;gap:0;box-shadow:0 1px 4px rgba(0,0,0,.06);
+  }
+  .brand{display:flex;align-items:center;gap:10px;margin-right:32px}
+  .brand-dot{width:10px;height:10px;border-radius:50%;background:#B71C1C}
+  .brand h1{font-size:13.5px;font-weight:500;color:#1A1A2E;white-space:nowrap}
+  .brand span{font-size:11px;font-weight:300;color:#999;white-space:nowrap}
+
+  .tab-btn{
+    display:flex;align-items:center;gap:7px;
+    padding:0 20px;border:none;background:none;
+    font-family:inherit;font-size:13px;font-weight:400;color:#777;
+    cursor:pointer;border-bottom:3px solid transparent;
+    transition:color .2s,border-color .2s;white-space:nowrap;
+  }
+  .tab-btn:hover{color:#1A1A2E}
+  .tab-btn.active{color:#B71C1C;border-bottom-color:#B71C1C;font-weight:500}
+  .tab-btn .tab-icon{font-size:14px}
+
+  .spacer{flex:1}
+  .brand-right{display:flex;align-items:center;font-size:10.5px;font-weight:300;color:#AAA}
+
+  /* ── Tab content ── */
+  .tab-panel{display:none;flex:1;overflow:hidden}
+  .tab-panel.active{display:flex;flex-direction:column}
+
+  /* Animation tab */
+  #panel-animation iframe{
+    width:100%;flex:1;border:none;display:block;
+  }
+
+  /* Heatmaps tab — side by side */
+  #panel-heatmaps{
+    flex-direction:row !important;
+    overflow:hidden;
+    padding:20px;
+    gap:16px;
+    align-items:stretch;
+  }
+  .hmap-card{
+    background:#fff;border:1px solid #E5E5E5;border-radius:12px;
+    overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06);
+    flex:1;min-width:0;
+    display:flex;flex-direction:column;
+  }
+  .hmap-header{
+    padding:12px 16px;border-bottom:1px solid #F0F0F0;
+    display:flex;align-items:center;gap:10px;flex-shrink:0;
+  }
+  .hmap-badge{
+    display:inline-block;padding:3px 12px;border-radius:20px;
+    font-size:11px;font-weight:500;letter-spacing:.3px;flex-shrink:0;
+  }
+  .badge-en{background:#FFEBEE;color:#B71C1C}
+  .badge-ln{background:#E3F2FD;color:#1565C0}
+  .hmap-title{font-size:12px;font-weight:400;color:#333}
+  .hmap-sub  {font-size:10px;font-weight:300;color:#999;margin-top:1px}
+  .hmap-img-wrap{
+    flex:1;overflow:auto;
+    display:flex;align-items:flex-start;
+  }
+  .hmap-img{
+    width:100%;height:auto;
+    display:block;cursor:zoom-in;
+    min-width:600px;   /* allow horizontal scroll on very small viewports */
+  }
+
+  /* Lightbox */
+  #lightbox{
+    display:none;position:fixed;inset:0;z-index:9999;
+    background:rgba(0,0,0,.82);backdrop-filter:blur(4px);
+    align-items:center;justify-content:center;cursor:zoom-out;
+  }
+  #lightbox.open{display:flex}
+  #lightbox img{max-width:96vw;max-height:92vh;border-radius:6px;box-shadow:0 8px 40px rgba(0,0,0,.5)}
+  #lb-close{
+    position:fixed;top:18px;right:22px;font-size:26px;color:#fff;
+    cursor:pointer;background:none;border:none;line-height:1;
+    font-weight:300;opacity:.8;
+  }
+  #lb-close:hover{opacity:1}
+
+
+/* ── Aequus nav ── */
+.ae-nav-home{padding:3px 11px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#0f2040;background:#F5F5F5;text-decoration:none;white-space:nowrap;transition:background .12s}
+.ae-nav-home:hover{background:#E0E0E0}
+.ae-nav-dd-wrap{position:relative}
+.ae-nav-dd-btn{padding:3px 11px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#0f2040;background:#F5F5F5;cursor:pointer;white-space:nowrap;transition:background .12s}
+.ae-nav-dd-btn:hover{background:#E0E0E0}
+.ae-nav-dd{display:none;position:absolute;top:calc(100% + 6px);left:0;background:#fff;border:1px solid #dde3ec;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:9999;min-width:210px;overflow:hidden}
+.ae-nav-dd.open{display:block}
+.ae-nav-dd a{display:block;padding:9px 16px;font-size:12px;color:#1a2332;text-decoration:none;transition:background .1s}
+.ae-nav-dd a:hover{background:#f0f4fa}
+.ae-nav-dd a.ae-current{font-weight:700;color:#0f2040;background:#e8edf4}
+</style>
+</head>
+<body>
+
+<!-- ── Navigation ── -->
+<nav id="navbar">
+  <a href="../index.html" class="ae-nav-home">&#8592; Menu</a>
+  <div class="ae-nav-dd-wrap">
+    <button class="ae-nav-dd-btn" onclick="aeToggleNav(this)">Dashboards &#9660;</button>
+    <div class="ae-nav-dd">
+      <a href="../homicidios/index.html">&#128506;&#xFE0F; Homicidios Ecuador</a>
+      <a href="../deuda-interna/index.html">&#128202; Deuda Interna</a>
+      <a href="../electricidad/index.html" class="ae-current">&#9889; Electricidad &mdash; CCS</a>
+    </div>
+  </div>
+  <div style="width:1px;height:20px;background:#E0E0E0;flex-shrink:0"></div>
+  <div class="brand">
+    <div class="brand-dot"></div>
+    <div>
+      <h1>ENSO &amp; Ecuador Electricity Grid</h1>
+      <span>Aequus Economics · 2026</span>
+    </div>
+  </div>
+
+  <button class="tab-btn active" data-target="panel-animation">
+    <span class="tab-icon">🗺</span> Animation
+  </button>
+  <button class="tab-btn" data-target="panel-heatmaps">
+    <span class="tab-icon">📊</span> Heatmaps
+  </button>
+  <button class="tab-btn" data-target="panel-annual">
+    <span class="tab-icon">📅</span> Annual Series
+  </button>
+  <button class="tab-btn" data-target="panel-celec">
+    <span class="tab-icon">📈</span> Paute Complex
+  </button>
+
+  <div class="spacer"></div>
+  <div class="brand-right">WorldClim CRU-TS 4.09 &nbsp;·&nbsp; ARCONEL 2025 &nbsp;·&nbsp; NOAA ONI</div>
+</nav>
+
+<!-- ── Panel 1: Animation ── -->
+<div class="tab-panel active" id="panel-animation">
+  <iframe src="el_nino_animation.html" id="anim-frame"></iframe>
+</div>
+
+<!-- ── Panel 2: Heatmaps ── -->
+<div class="tab-panel" id="panel-heatmaps">
+
+  <!-- El Niño heatmap -->
+  <div class="hmap-card">
+    <div class="hmap-header">
+      <span class="hmap-badge badge-en">El Niño</span>
+      <div>
+        <div class="hmap-title">Rainfall Change During El Niño Events vs. 2023  |  Ecuador Hydro Plants ≥ 50 MW</div>
+        <div class="hmap-sub">24 events · 1951–2024 · Click to enlarge</div>
+      </div>
+    </div>
+    <div class="hmap-img-wrap">
+      <img class="hmap-img" src="figures/heatmap_elnino_vs_2023.png"
+           alt="El Nino heatmap" title="Click to enlarge"/>
+    </div>
+  </div>
+
+  <!-- La Niña heatmap -->
+  <div class="hmap-card">
+    <div class="hmap-header">
+      <span class="hmap-badge badge-ln">La Niña</span>
+      <div>
+        <div class="hmap-title">Rainfall Change During La Niña Events vs. 2023  |  Ecuador Hydro Plants ≥ 50 MW</div>
+        <div class="hmap-sub">18 events · 1951–2023 · Click to enlarge</div>
+      </div>
+    </div>
+    <div class="hmap-img-wrap">
+      <img class="hmap-img" src="figures/heatmap_lanina_vs_2023.png"
+           alt="La Nina heatmap" title="Click to enlarge"/>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Panel 3: Annual Series ── -->
+<div class="tab-panel" id="panel-annual">
+  <iframe src="annual_animation.html" id="annual-frame"></iframe>
+</div>
+
+<!-- ── Panel 4: Paute Complex ── -->
+<div class="tab-panel" id="panel-celec">
+  <iframe src="celec_dashboard.html" id="celec-frame" style="border:none;width:100%;display:block;"></iframe>
+</div>
+
+<!-- ── Lightbox ── -->
+<div id="lightbox">
+  <button id="lb-close">✕</button>
+  <img id="lb-img" src="" alt=""/>
+</div>
+
+<script>
+  // ── Tab switching ──────────────────────────────────────────────────────────
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.target).classList.add('active');
+
+      // Resize iframe when switching to animation tab
+      if (btn.dataset.target === 'panel-animation') {
+        const fr = document.getElementById('anim-frame');
+        fr.style.height = (window.innerHeight - 52) + 'px';
+      }
+      if (btn.dataset.target === 'panel-annual') {
+        const fr = document.getElementById('annual-frame');
+        fr.style.height = (window.innerHeight - 52) + 'px';
+      }
+      if (btn.dataset.target === 'panel-celec') {
+        const fr = document.getElementById('celec-frame');
+        fr.style.height = (window.innerHeight - 52) + 'px';
+      }
+    });
+  });
+
+  // Set iframe height on load
+  function setFrameHeight() {
+    const h = (window.innerHeight - 52) + 'px';
+    document.getElementById('anim-frame').style.height   = h;
+    document.getElementById('annual-frame').style.height = h;
+    document.getElementById('celec-frame').style.height  = h;
+  }
+  window.addEventListener('resize', setFrameHeight);
+  setFrameHeight();
+
+  // ── Lightbox ───────────────────────────────────────────────────────────────
+  const lb    = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lb-img');
+
+  document.querySelectorAll('.hmap-img').forEach(img => {
+    img.addEventListener('click', () => {
+      lbImg.src = img.src;
+      lb.classList.add('open');
+    });
+  });
+
+  document.getElementById('lb-close').addEventListener('click', () => lb.classList.remove('open'));
+  lb.addEventListener('click', e => { if (e.target === lb) lb.classList.remove('open'); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('open'); });
+</script>
+<script>
+function aeToggleNav(btn){btn.nextElementSibling.classList.toggle('open')}
+document.addEventListener('click',function(e){if(!e.target.closest('.ae-nav-dd-wrap'))document.querySelectorAll('.ae-nav-dd').forEach(function(d){d.classList.remove('open')})});
+</script>
+</body>
+</html>

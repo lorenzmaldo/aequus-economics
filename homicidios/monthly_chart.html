@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Homicidios mensuales — Ecuador</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#1a1a1a;padding:1.2rem 1.5rem}
+  h2{font-size:1.05rem;font-weight:700;color:#7f0000;margin-bottom:.9rem}
+  .controls{display:flex;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;justify-content:space-between}
+  label{font-size:.85rem;font-weight:600;color:#444}
+  select{font-size:.9rem;padding:.35rem .7rem;border:1px solid #ccc;border-radius:4px;
+          background:#fff;color:#1a1a1a;cursor:pointer}
+  select:focus{outline:2px solid #d7301f;border-color:#d7301f}
+  #note{font-size:.75rem;color:#888;font-style:italic}
+  #chart{width:100%;height:calc(100vh - 130px)}
+</style>
+</head>
+<body>
+<h2>Homicidios por mes — comparativa anual</h2>
+<div class="controls">
+  <label for="monthSel">Seleccionar mes:</label>
+  <select id="monthSel" onchange="update()">
+    <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option><option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option><option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option><option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+  </select>
+  <span id="note">*2026: datos parciales hasta Abril</span>
+  <a href="resumen_mensual.xlsx" download
+     style="margin-left:auto;background:#7f0000;color:white;text-decoration:none;font-weight:600;font-size:.8rem;padding:.35rem 1rem;border-radius:4px">
+    Descargar base de datos (.xlsx)
+  </a>
+</div>
+<div id="chart"></div>
+
+<script>
+const DATA  = {"1": {"counts": [151, 98, 99, 93, 31, 33, 113, 122, 318, 534, 507, 800, 759], "growth": [null, -35.1, 1.0, -6.1, -66.7, 6.5, 242.4, 8.0, 160.7, 67.9, -5.1, 57.8, -5.1], "partial": [false, false, false, false, false, false, false, false, false, false, false, false, true]}, "2": {"counts": [101, 82, 73, 90, 43, 41, 116, 226, 317, 505, 388, 751, 682], "growth": [null, -18.8, -11.0, 23.3, -52.2, -4.7, 182.9, 94.8, 40.3, 59.3, -23.2, 93.6, -9.2], "partial": [false, false, false, false, false, false, false, false, false, false, false, false, true]}, "3": {"counts": [129, 105, 78, 93, 41, 30, 80, 173, 350, 659, 536, 857, 664], "growth": [null, -18.6, -25.7, 19.2, -55.9, -26.8, 166.7, 116.3, 102.3, 88.3, -18.7, 59.9, -22.5], "partial": [false, false, false, false, false, false, false, false, false, false, false, false, true]}, "4": {"counts": [120, 85, 77, 85, 40, 47, 88, 176, 373, 645, 526, 742, 673], "growth": [null, -29.2, -9.4, 10.4, -52.9, 17.5, 87.2, 100.0, 111.9, 72.9, -18.4, 41.1, -9.3], "partial": [false, false, false, false, false, false, false, false, false, false, false, false, true]}, "5": {"counts": [107, 95, 89, 88, 48, 44, 95, 172, 435, 662, 585, 935, null], "growth": [null, -11.2, -6.3, -1.1, -45.5, -8.3, 115.9, 81.1, 152.9, 52.2, -11.6, 59.8, null], "partial": [false, false, false, false, false, false, false, false, false, false, false, false, false]}, "6": {"counts": [115, 100, 83, 79, 34, 38, 115, 170, 363, 710, 611, 574, null], "growth": [null, -13.0, -17.0, -4.8, -57.0, 11.8, 202.6, 47.8, 113.5, 95.6, -13.9, -6.1, null], "partial": [false, false, false, false, false, false, false, false, false, false, false, false, false]}, "7": {"counts": [82, 75, 84, 74, 27, 28, 94, 198, 411, 795, 600, 637, null], "growth": [null, -8.5, 12.0, -11.9, -63.5, 3.7, 235.7, 110.6, 107.6, 93.4, -24.5, 6.2, null], "partial": [false, false, false, false, false, false, false, false, false, false, false, false, false]}, "8": {"counts": [114, 78, 66, 59, 18, 29, 122, 203, 401, 602, 621, 771, null], "growth": [null, -31.6, -15.4, -10.6, -69.5, 61.1, 320.7, 66.4, 97.5, 50.1, 3.2, 24.2, null], "partial": [false, false, false, false, false, false, false, false, false, false, false, false, false]}, "9": {"counts": [90, 82, 82, 63, 23, 34, 105, 325, 483, 781, 610, 771, null], "growth": [null, -8.9, 0.0, -23.2, -63.5, 47.8, 208.8, 209.5, 48.6, 61.7, -21.9, 26.4, null], "partial": [false, false, false, false, false, false, false, false, false, false, false, false, false]}, "10": {"counts": [82, 89, 55, 51, 28, 20, 138, 225, 477, 833, 699, 782, null], "growth": [null, 8.5, -38.2, -7.3, -45.1, -28.6, 590.0, 63.0, 112.0, 74.6, -16.1, 11.9, null], "partial": [false, false, false, false, false, false, false, false, false, false, false, false, false]}, "11": {"counts": [106, 82, 89, 33, 29, 18, 148, 282, 425, 766, 666, 858, null], "growth": [null, -22.6, 8.5, -62.9, -12.1, -37.9, 722.2, 90.5, 50.7, 80.2, -13.1, 28.8, null], "partial": [false, false, false, false, false, false, false, false, false, false, false, false, false]}, "12": {"counts": [113, 78, 67, 33, 24, 17, 157, 223, 533, 756, 713, 803, null], "growth": [null, -31.0, -14.1, -50.7, -27.3, -29.2, 823.5, 42.0, 139.0, 41.8, -5.7, 12.6, null], "partial": [false, false, false, false, false, false, false, false, false, false, false, false, false]}};
+const YEARS = [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
+const NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+function update() {
+  const m = parseInt(document.getElementById('monthSel').value);
+  const d = DATA[m];
+
+  const barColors = d.counts.map((c, i) =>
+    d.partial[i] ? '#FCAE91' : '#D7301F'
+  );
+
+  const bars = {
+    x: YEARS, y: d.counts,
+    type: 'bar',
+    name: 'Homicidios',
+    marker: { color: barColors },
+    yaxis: 'y1',
+    hovertemplate: '%{x}: %{y:,}<extra></extra>',
+  };
+
+  const line = {
+    x: YEARS, y: d.growth,
+    type: 'scatter', mode: 'lines+markers',
+    name: 'Variacion anual (%)',
+    line: { color: '#1A1A2E', width: 2.2 },
+    marker: { size: 7, color: d.growth.map(v =>
+      v === null ? '#ccc' : v >= 0 ? '#cc0000' : '#2166ac'
+    )},
+    yaxis: 'y2',
+    hovertemplate: '%{x}: %{y:.1f}%<extra></extra>',
+    connectgaps: false,
+  };
+
+  const layout = {
+    title: { text: `Homicidios en <b>${NAMES[m-1]}</b> — por año`, font: { size: 13 } },
+    xaxis: { tickmode: 'linear', dtick: 1, title: 'Año' },
+    yaxis: { title: 'Homicidios', titlefont: { color: '#D7301F' },
+              tickfont: { color: '#D7301F' }, rangemode: 'tozero' },
+    yaxis2: { title: 'Variacion anual (%)', titlefont: { color: '#1A1A2E' },
+               tickfont: { color: '#1A1A2E' }, overlaying: 'y',
+               side: 'right', zeroline: true, zerolinecolor: '#aaa',
+               zerolinewidth: 1 },
+    legend: { orientation: 'h', y: -0.15 },
+    margin: { t: 45, r: 60, b: 60, l: 55 },
+    plot_bgcolor: '#fff', paper_bgcolor: '#fff',
+    bargap: 0.25,
+    shapes: [{ type: 'line', xref: 'paper', yref: 'y2',
+                x0: 0, x1: 1, y0: 0, y1: 0,
+                line: { color: '#aaa', width: 1, dash: 'dot' } }],
+  };
+
+  Plotly.react('chart', [bars, line], layout, {responsive: true, displayModeBar: false});
+}
+
+update();
+</script>
+</body>
+</html>

@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Deuda Interna · Ecuador</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Segoe UI',Arial,sans-serif;font-weight:300;background:#ECEFF1;color:#1A1A2E}
+
+/* ── Top bar ── */
+#topbar{
+  height:42px;background:#fff;border-bottom:1px solid #DDD;
+  display:flex;align-items:center;padding:0 16px;gap:12px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);flex-shrink:0;
+}
+.tb-title{font-size:13px;font-weight:500;color:#1A1A2E;white-space:nowrap}
+.tb-sep{width:1px;height:20px;background:#E0E0E0}
+.tb-spacer{flex:1}
+.tb-meta{font-size:9.5px;font-weight:300;color:#AAA;text-align:right;line-height:1.6}
+
+/* ── Aequus nav ── */
+.ae-nav-home{padding:3px 11px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#0f2040;background:#F5F5F5;text-decoration:none;white-space:nowrap;transition:background .12s}
+.ae-nav-home:hover{background:#E0E0E0}
+.ae-nav-dd-wrap{position:relative}
+.ae-nav-dd-btn{padding:3px 11px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#0f2040;background:#F5F5F5;cursor:pointer;white-space:nowrap;transition:background .12s}
+.ae-nav-dd-btn:hover{background:#E0E0E0}
+.ae-nav-dd{display:none;position:absolute;top:calc(100% + 6px);left:0;background:#fff;border:1px solid #dde3ec;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:9999;min-width:210px;overflow:hidden}
+.ae-nav-dd.open{display:block}
+.ae-nav-dd a{display:block;padding:9px 16px;font-size:12px;color:#1a2332;text-decoration:none;transition:background .1s}
+.ae-nav-dd a:hover{background:#f0f4fa}
+.ae-nav-dd a.ae-current{font-weight:700;color:#0f2040;background:#e8edf4}
+
+/* ── Dashboard grid ── */
+#dashboard{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:1fr 1fr;
+  height:calc(100vh - 42px);
+  gap:8px;padding:8px;
+}
+
+/* ── Quadrant cards ── */
+.quad{
+  background:#fff;border-radius:10px;border:1px solid #E5E5E5;
+  box-shadow:0 1px 6px rgba(0,0,0,.05);
+  display:flex;flex-direction:column;overflow:hidden;min-height:0;
+  padding:10px 12px 8px;
+}
+
+/* ── Quad header ── */
+.qh{display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0;margin-bottom:4px}
+.qh h4{font-size:12px;font-weight:500;color:#37474F;line-height:1.2}
+.qh .qsub{font-size:9.5px;font-weight:300;color:#AAA;margin-top:1px}
+.qh-right{display:flex;align-items:center;gap:4px;flex-shrink:0;margin-left:8px}
+
+/* ── Controls ── */
+.ctrls{display:flex;align-items:center;gap:4px;flex-wrap:wrap;flex-shrink:0;margin-bottom:4px}
+.lbl{font-size:9.5px;font-weight:300;color:#AAA}
+.cbtn{
+  padding:2px 9px;border-radius:9px;border:1px solid #E0E0E0;
+  font-size:10px;cursor:pointer;background:#F8F8F8;color:#666;
+  transition:background .1s;white-space:nowrap;font-family:inherit;
+}
+.cbtn:hover{background:#E8E8E8}
+.cbtn.active{background:#1565C0;border-color:#1565C0;color:#fff}
+.div-ctrl{width:1px;height:14px;background:#E0E0E0;margin:0 2px}
+
+/* ── Inline select ── */
+.qs{
+  border:1px solid #E0E0E0;border-radius:6px;padding:2px 6px;
+  font-size:10px;font-family:inherit;color:#333;background:#F8F8F8;
+  cursor:pointer;outline:none;
+}
+.qs:focus{border-color:#1565C0}
+
+/* ── Chart area fills remaining space ── */
+.chart-area{flex:1;min-height:0;position:relative}
+canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
+
+/* ── Stats chips ── */
+.chips{display:flex;gap:6px;flex-shrink:0;margin-bottom:4px;flex-wrap:wrap}
+.chip{background:#F5F7FA;border:1px solid #E8E8E8;border-radius:6px;
+      padding:4px 8px;flex:1;min-width:80px}
+.chip .cv{font-size:14px;font-weight:300;color:#1A1A2E;line-height:1}
+.chip .cl{font-size:8px;font-weight:300;color:#AAA;margin-top:1px}
+
+/* ── Date slots (yield curve) ── */
+.date-row{display:flex;gap:4px;flex-wrap:wrap;flex-shrink:0;margin-bottom:4px}
+.ds{
+  display:flex;align-items:center;gap:3px;
+  border:1px solid #E0E0E0;border-radius:8px;
+  padding:2px 5px;background:#F8F8F8;transition:border-color .12s;
+}
+.ds.active{border-color:#1565C0;background:#EEF4FF}
+.ds-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;opacity:.35;transition:opacity .12s}
+.ds.active .ds-dot{opacity:1}
+.ds-sel{
+  border:none;background:transparent;font-size:9px;color:#333;
+  cursor:pointer;padding:0;font-family:inherit;outline:none;max-width:52px;
+}
+.ds-x{
+  border:none;background:transparent;color:#BBB;cursor:pointer;
+  font-size:13px;line-height:1;padding:0 1px;font-family:inherit;
+}
+.ds-x:hover{color:#555}
+</style>
+</head>
+<body>
+
+<!-- ── Top bar ─────────────────────────────────────────────────── -->
+<div id="topbar">
+  <a href="../index.html" class="ae-nav-home">&#8592; Menu</a>
+  <div class="ae-nav-dd-wrap">
+    <button class="ae-nav-dd-btn" onclick="aeToggleNav(this)">Dashboards &#9660;</button>
+    <div class="ae-nav-dd">
+      <a href="../homicidios/index.html">&#128506;&#xFE0F; Homicidios Ecuador</a>
+      <a href="../deuda-interna/index.html" class="ae-current">&#128202; Deuda Interna</a>
+      <a href="../electricidad/index.html">&#9889; Electricidad &mdash; CCS</a>
+    </div>
+  </div>
+  <div class="tb-sep"></div>
+  <span class="tb-title">Deuda Interna &nbsp;&#8212;&nbsp; Ecuador</span>
+  <div class="tb-sep"></div>
+  <span class="lbl">Mercado primario &amp; curva de rendimientos &nbsp;&#183;&nbsp; BVQ</span>
+  <div class="tb-spacer"></div>
+  <a href="deuda_interna_resumen.xlsx" download
+     style="padding:4px 14px;border-radius:12px;border:1px solid #DDD;
+            font-size:11px;font-weight:400;color:#333;background:#F5F5F5;
+            text-decoration:none;white-space:nowrap;"
+     title="Descargar resumen en Excel">&#11015; Excel</a>
+  <div class="tb-sep"></div>
+  <div class="tb-meta" id="tb-meta">Cargando…</div>
+</div>
+
+<!-- ── 2×2 Dashboard ────────────────────────────────────────────── -->
+<div id="dashboard">
+
+  <!-- Q1 top-left: Annual primary issuance -->
+  <div class="quad">
+    <div class="qh">
+      <div>
+        <h4>Emisión Primaria por Año</h4>
+        <div class="qsub">Valor efectivo USD &nbsp;&#183;&nbsp; segmentos = meses &nbsp;&#183;&nbsp; haz clic para ver detalle</div>
+      </div>
+    </div>
+    <div class="chips" id="chips-q1"></div>
+    <div class="chart-area"><canvas id="ch-q1"></canvas></div>
+  </div>
+
+  <!-- Q2 top-right: Monthly drilldown -->
+  <div class="quad">
+    <div class="qh">
+      <div>
+        <h4>Detalle Mensual</h4>
+        <div class="qsub">Valor efectivo USD por mes</div>
+      </div>
+      <div class="qh-right" style="gap:6px">
+        <button class="cbtn active" data-q2v="vol">Emisión</button>
+        <button class="cbtn"        data-q2v="rc">Rend. / Cupón</button>
+        <div class="div-ctrl"></div>
+        <span class="lbl">Año:</span>
+        <select class="qs" id="drill-year"></select>
+      </div>
+    </div>
+    <div class="chips" id="chips-q2"></div>
+    <div class="chart-area"><canvas id="ch-q2"></canvas></div>
+  </div>
+
+  <!-- Q3 bottom-left: Yield curve comparator -->
+  <div class="quad">
+    <div class="qh">
+      <div>
+        <h4>Curva de Rendimientos &nbsp;&#183;&nbsp; Comparación</h4>
+        <div class="qsub">Rendimiento promedio mercado secundario &nbsp;&#183;&nbsp; hasta 5 fechas</div>
+      </div>
+    </div>
+    <div class="date-row" id="date-row"></div>
+    <div class="chart-area"><canvas id="ch-q3"></canvas></div>
+  </div>
+
+  <!-- Q4 bottom-right: Tenor time series -->
+  <div class="quad">
+    <div class="qh">
+      <div>
+        <h4>Series de Tiempo por Plazo</h4>
+        <div class="qsub">Rendimiento promedio mensual &nbsp;&#183;&nbsp; mercado secundario</div>
+      </div>
+    </div>
+    <div class="ctrls" id="tenor-btns"></div>
+    <div class="chips" id="chips-q4"></div>
+    <div class="chart-area"><canvas id="ch-q4"></canvas></div>
+  </div>
+
+</div><!-- /dashboard -->
+
+<script>
+// ── Constants ──────────────────────────────────────────────────────────────
+const MONTHS  = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const TENORS  = ['Hasta 1','De 1 a 3','De 3 a 5','Mas de 5'];
+
+// 12 month colours: indigo → blue → teal → green
+const MC = [
+  '#283593','#1565C0','#1976D2','#2196F3',
+  '#0097A7','#00838F','#00796B','#004D40',
+  '#2E7D32','#388E3C','#558B2F','#827717',
+];
+const TC = {'Hasta 1':'#E65100','De 1 a 3':'#1565C0','De 3 a 5':'#00796B','Mas de 5':'#2E7D32'};
+const CC = ['#1565C0','#00796B','#2E7D32','#E65100','#7B1FA2'];   // compare curve colours
+
+Chart.defaults.color          = '#888';
+Chart.defaults.borderColor    = 'rgba(0,0,0,0.06)';
+Chart.defaults.font.family    = "'Segoe UI',Arial,sans-serif";
+Chart.defaults.font.weight    = '300';
+
+const GRID = 'rgba(0,0,0,0.06)';
+const tick  = (cb) => { const t={color:'#999',font:{size:9}}; if(cb) t.callback=cb; return t; };
+const axis  = (cb) => ({ ticks:tick(cb), grid:{color:GRID} });
+
+// ── State ──────────────────────────────────────────────────────────────────
+let P, Y;                            // primaryData, yieldData
+let chQ1, chQ2, chQ3, chQ4;
+let activeTenors = new Set(TENORS);
+const slots = Array.from({length:5}, ()=>({yr:'',mo:''}));
+
+// ── Load ───────────────────────────────────────────────────────────────────
+async function load() {
+  [P, Y] = await Promise.all([
+    fetch('./primary_issuance.json').then(r=>r.json()),
+    fetch('./secondary_yields.json').then(r=>r.json()),
+  ]);
+  const updated = [P.updated, Y.updated].filter(Boolean).sort().pop() || '—';
+  document.getElementById('tb-meta').innerHTML =
+    `Datos al <strong style="color:#37474F">${updated}</strong> &nbsp;&#183;&nbsp; Fuente: BVQ`;
+  init();
+}
+
+function init() {
+  buildQ1();
+  buildQ2controls();
+  updateQ2(P.years[P.years.length-1]);
+  buildQ3();
+  buildQ4controls();
+  buildQ4();
+  buildDateRow();
+  // Pre-select 3 comparison dates
+  const avail = Y.dates;
+  if (avail.length) {
+    const pick = (i) => avail[Math.max(0, Math.floor(i))] || '';
+    [[avail.length-1, 0],[Math.floor(avail.length*0.6), 1],[Math.floor(avail.length*0.25), 2]]
+      .forEach(([idx,si]) => {
+        const d = avail[idx]||''; if(!d) return;
+        slots[si].yr = d.slice(0,4); slots[si].mo = d.slice(5,7);
+      });
+    renderSlots();
+    updateQ3();
+  }
+  // Chips
+  buildChipsQ1();
+}
+
+// ── Q1: Annual stacked bar ─────────────────────────────────────────────────
+function buildQ1() {
+  const years = P.years;
+  const ds = MONTHS.map((name,i) => ({
+    label: name,
+    data:  years.map(yr => (P.monthly[yr]?.[String(i+1)]||0)/1e6),
+    backgroundColor: MC[i],
+    stack: 's', borderWidth: 0,
+  }));
+  chQ1 = new Chart(document.getElementById('ch-q1'), {
+    type: 'bar',
+    data: { labels: years, datasets: ds },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend: { position:'bottom', labels:{ color:'#999', font:{size:8}, boxWidth:8, padding:5 } },
+        tooltip: {
+          mode:'index',
+          callbacks: {
+            label:  c => ` ${c.dataset.label}: $${c.raw.toFixed(0)}M`,
+            footer: items => `Total: $${items.reduce((s,i)=>s+i.raw,0).toFixed(0)}M`,
+          },
+        },
+      },
+      scales: {
+        x: { type:'category', stacked:true, ...axis() },
+        y: { stacked:true, ...axis(v=>`$${v.toFixed(0)}M`) },
+      },
+      onClick: (_,els) => { if(els.length) updateQ2(P.years[els[0].index]); },
+    },
+  });
+}
+
+function buildChipsQ1() {
+  const total = Object.values(P.annual_total).reduce((s,v)=>s+v,0);
+  const lastYr = P.years[P.years.length-1];
+  const ytd    = P.annual_total[lastYr] || 0;
+  const c = document.getElementById('chips-q1');
+  c.innerHTML = `
+    <div class="chip"><div class="cv">$${(total/1e9).toFixed(2)}bn</div><div class="cl">Total emitido 2021–${lastYr}</div></div>
+    <div class="chip"><div class="cv">$${(ytd/1e6).toFixed(0)}M</div><div class="cl">${lastYr} (acumulado)</div></div>`;
+}
+
+// ── Q2: Monthly drilldown (Emisión / Rendimiento / Cupón) ─────────────────
+let q2View  = 'vol';
+let q2Year  = '';
+
+function buildQ2controls() {
+  const sel = document.getElementById('drill-year');
+  P.years.slice().reverse().forEach(yr => {
+    const o = document.createElement('option');
+    o.value = yr; o.textContent = yr; sel.appendChild(o);
+  });
+  sel.addEventListener('change', () => updateQ2(sel.value, q2View));
+
+  // View toggle buttons
+  document.querySelectorAll('[data-q2v]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-q2v]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      updateQ2(q2Year, btn.dataset.q2v);
+    });
+  });
+}
+
+function updateQ2(year, view) {
+  q2Year = year; q2View = view || q2View;
+  document.getElementById('drill-year').value = year;
+
+  // Chips: always show volume summary
+  const md    = P.monthly[year] || {};
+  const vals  = MONTHS.map((_,i) => (md[String(i+1)]||0)/1e6);
+  const total = vals.reduce((s,v)=>s+v,0);
+  const peak  = MONTHS[vals.indexOf(Math.max(...vals.filter(v=>v>0)))];
+  document.getElementById('chips-q2').innerHTML = `
+    <div class="chip"><div class="cv">$${(total).toFixed(0)}M</div><div class="cl">Total ${year}</div></div>
+    <div class="chip"><div class="cv">${peak||'—'}</div><div class="cl">Mes pico</div></div>`;
+
+  // Destroy existing chart before recreating (type may change)
+  if (chQ2) { chQ2.destroy(); chQ2 = null; }
+
+  if (q2View === 'vol') {
+    chQ2 = new Chart(document.getElementById('ch-q2'), {
+      type: 'bar',
+      data: {
+        labels: MONTHS,
+        datasets: [{ label:'USD M', data:vals, backgroundColor:MC, borderWidth:0, borderRadius:3 }],
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins: {
+          legend: { display:false },
+          tooltip: { callbacks:{ label: c=>` $${c.raw.toFixed(1)}M` } },
+        },
+        scales: {
+          x: { type:'category', ...axis() },
+          y: { ...axis(v=>`$${v.toFixed(0)}M`),
+               title:{ display:true, text:'USD millones', color:'#BBB', font:{size:9} } },
+        },
+      },
+    });
+    return;
+  }
+
+  // Rend. / Cupón — side-by-side bars by tenor (avg across all months of selected year)
+  const yData = P.monthly_yield?.[year]  || {};
+  const cData = P.monthly_coupon?.[year] || {};
+
+  // For each tenor: average across all months that have data
+  const avgByTenor = (store) => TENORS.map(t => {
+    const vals = Object.values(store).map(mo => mo[t]).filter(v => v != null);
+    return vals.length ? Math.round((vals.reduce((s,v)=>s+v,0)/vals.length)*10000)/10000 : null;
+  });
+
+  const rendVals  = avgByTenor(yData);
+  const cupVals   = avgByTenor(cData);
+  const hasData   = [...rendVals, ...cupVals].some(v => v != null);
+
+  if (!hasData) {
+    chQ2 = new Chart(document.getElementById('ch-q2'), {
+      type:'bar', data:{labels:MONTHS, datasets:[]},
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false},
+          title:{ display:true, text:'Sin datos — ejecutar run_all.py para regenerar JSON',
+                  color:'#BBB', font:{size:11} } } }
+    });
+    return;
+  }
+
+  chQ2 = new Chart(document.getElementById('ch-q2'), {
+    type: 'bar',
+    data: {
+      labels: TENORS,
+      datasets: [
+        { label:'Rendimiento (%)', data:rendVals, backgroundColor:'#1565C0',
+          borderRadius:3, barPercentage:0.75, categoryPercentage:0.6 },
+        { label:'Cupón (%)',       data:cupVals,  backgroundColor:'#00796B',
+          borderRadius:3, barPercentage:0.75, categoryPercentage:0.6 },
+      ],
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend: { position:'top', labels:{ font:{size:9}, boxWidth:10, padding:8 } },
+        tooltip: { mode:'index', callbacks:{
+          label: c => c.raw != null ? ` ${c.dataset.label}: ${c.raw.toFixed(2)}%` : null,
+        }},
+      },
+      scales: {
+        x: { type:'category', ...axis() },
+        y: { ...axis(v=>`${v}%`),
+             title:{ display:true, text:'Rendimiento / Cupón (%)', color:'#BBB', font:{size:9} } },
+      },
+    },
+  });
+}
+
+// ── Q3: Yield curve comparator ────────────────────────────────────────────
+function buildQ3() {
+  chQ3 = new Chart(document.getElementById('ch-q3'), {
+    type:'line',
+    data:{ labels:TENORS, datasets:[] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ position:'top', labels:{ font:{size:9}, boxWidth:10, padding:8 } },
+        tooltip:{ callbacks:{ label: c=>` ${c.dataset.label}: ${c.raw?.toFixed(2)}%` } },
+      },
+      scales:{
+        x:{ type:'category', ...axis() },
+        y:{ ...axis(v=>`${v}%`), title:{ display:true, text:'Rendimiento %', color:'#BBB', font:{size:9} } },
+      },
+    },
+  });
+}
+
+function updateQ3() {
+  const ds = [];
+  slots.forEach((s,i) => {
+    if (!s.yr||!s.mo) return;
+    const key = `${s.yr}-${s.mo}`;
+    const pt  = Y.by_date[key]; if(!pt) return;
+    const data = TENORS.map(t=>pt[t]??null);
+    if (data.every(v=>v===null)) return;
+    ds.push({
+      label: `${MONTHS[+s.mo-1]} ${s.yr}`,
+      data, borderColor:CC[i], backgroundColor:CC[i]+'18',
+      pointRadius:5, pointHoverRadius:7, pointBackgroundColor:CC[i],
+      borderWidth:2, tension:0.2, fill:false,
+    });
+  });
+  chQ3.data.datasets = ds;
+  chQ3.update();
+}
+
+// ── Q3 date slots ─────────────────────────────────────────────────────────
+function buildDateRow() {
+  const row  = document.getElementById('date-row');
+  const yrs  = [...new Set(Y.dates.map(d=>d.slice(0,4)))].sort();
+  row.innerHTML = '';
+  for (let i=0;i<5;i++) {
+    const dot  = `<span class="ds-dot" style="background:${CC[i]}"></span>`;
+    const selY = `<select class="ds-sel" id="sy${i}"><option value="">Año</option>${yrs.map(y=>`<option>${y}</option>`).join('')}</select>`;
+    const selM = `<select class="ds-sel" id="sm${i}"><option value="">Mes</option>${MONTHS.map((m,j)=>`<option value="${String(j+1).padStart(2,'0')}">${m}</option>`).join('')}</select>`;
+    const btn  = `<button class="ds-x" data-i="${i}">×</button>`;
+    const div  = document.createElement('div');
+    div.className='ds'; div.id=`ds${i}`;
+    div.innerHTML = dot+selY+selM+btn;
+    row.appendChild(div);
+    div.querySelector(`#sy${i}`).addEventListener('change', e=>{ slots[i].yr=e.target.value; sync(i); });
+    div.querySelector(`#sm${i}`).addEventListener('change', e=>{ slots[i].mo=e.target.value; sync(i); });
+    div.querySelector('.ds-x').addEventListener('click', ()=>{ slots[i]={yr:'',mo:''}; renderSlots(); updateQ3(); });
+  }
+}
+
+function sync(i) { renderSlots(); updateQ3(); }
+
+function renderSlots() {
+  for(let i=0;i<5;i++){
+    const s=slots[i];
+    const el=document.getElementById(`ds${i}`);
+    if(!el) continue;
+    el.classList.toggle('active', !!(s.yr&&s.mo));
+    const sy=document.getElementById(`sy${i}`); if(sy) sy.value=s.yr;
+    const sm=document.getElementById(`sm${i}`); if(sm) sm.value=s.mo;
+  }
+}
+
+// ── Q4: Tenor time series ─────────────────────────────────────────────────
+function buildQ4controls() {
+  const c = document.getElementById('tenor-btns');
+  TENORS.forEach(t => {
+    const b = document.createElement('button');
+    b.className='cbtn active'; b.textContent=t;
+    b.style.borderColor=TC[t]; b.style.color=TC[t]; b.style.background=TC[t]+'18';
+    b.addEventListener('click', () => {
+      if (activeTenors.has(t)) {
+        activeTenors.delete(t); b.classList.remove('active');
+        b.style.background='transparent'; b.style.color='#999'; b.style.borderColor='#E0E0E0';
+      } else {
+        activeTenors.add(t); b.classList.add('active');
+        b.style.background=TC[t]+'18'; b.style.color=TC[t]; b.style.borderColor=TC[t];
+      }
+      chQ4.data.datasets.forEach((ds,i)=>{
+        chQ4.setDatasetVisibility(i, activeTenors.has(TENORS[i]));
+      });
+      chQ4.update();
+    });
+    c.appendChild(b);
+  });
+  // Chips: most recent yield per tenor
+  const last = Y.dates[Y.dates.length-1];
+  const pt   = Y.by_date[last] || {};
+  document.getElementById('chips-q4').innerHTML = TENORS.map(t =>
+    `<div class="chip">
+       <div class="cv" style="color:${TC[t]}">${pt[t]!=null?pt[t].toFixed(2)+'%':'—'}</div>
+       <div class="cl">${t} &nbsp;&#183;&nbsp; ${last||'—'}</div>
+     </div>`
+  ).join('');
+}
+
+function buildQ4() {
+  const dates = Y.dates;
+  // Show only Jan on x-axis
+  const tickCb = function(val,idx){ const d=dates[idx]; return d&&d.endsWith('-01')?d.slice(0,4):''; };
+  const ds = TENORS.map(t => ({
+    label: t,
+    data:  dates.map(d=>Y.by_date[d]?.[t]??null),
+    borderColor: TC[t], backgroundColor:'transparent',
+    pointRadius:0, pointHoverRadius:4, borderWidth:1.8, tension:.3, spanGaps:true,
+  }));
+  chQ4 = new Chart(document.getElementById('ch-q4'), {
+    type:'line',
+    data:{ labels:dates, datasets:ds },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ position:'top', labels:{ font:{size:9}, boxWidth:10, padding:8 } },
+        tooltip:{ callbacks:{ label: c=>` ${c.dataset.label}: ${c.raw?.toFixed(2)}%` } },
+      },
+      scales:{
+        x:{ ticks:{ ...tick(tickCb), maxRotation:0 }, grid:{color:GRID} },
+        y:{ ...axis(v=>`${v}%`), title:{ display:true, text:'Rendimiento %', color:'#BBB', font:{size:9} } },
+      },
+    },
+  });
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────
+load().catch(err => {
+  document.getElementById('tb-meta').innerHTML =
+    `<span style="color:#E53935">Error al cargar datos &mdash; ejecuta: python -m http.server 8000</span>`;
+  console.error(err);
+});
+</script>
+<script>
+function aeToggleNav(btn){btn.nextElementSibling.classList.toggle('open')}
+document.addEventListener('click',function(e){if(!e.target.closest('.ae-nav-dd-wrap'))document.querySelectorAll('.ae-nav-dd').forEach(function(d){d.classList.remove('open')})});
+</script>
+</body>
+</html>
