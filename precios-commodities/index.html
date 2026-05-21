@@ -41,8 +41,10 @@ main{flex:1;max-width:1100px;margin:0 auto;padding:32px 24px;width:100%}
 /* ── Chart cards ── */
 .charts{display:flex;flex-direction:column;gap:24px}
 .chart-card{background:#fff;border-radius:10px;border:1px solid #e0e0e0;padding:24px 24px 16px}
-.chart-card h2{font-size:.95rem;font-weight:700;color:#0a3373;margin-bottom:4px}
-.chart-card p{font-size:.78rem;color:#888;margin-bottom:16px}
+.chart-card-hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:4px}
+.chart-card h2{font-size:.95rem;font-weight:700;color:#0a3373}
+.through-badge{font-size:.7rem;font-weight:600;color:#1a7a45;background:#d1f0e0;padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.chart-card p{font-size:.78rem;color:#888;margin-bottom:16px;margin-top:4px}
 .chart-wrap{position:relative;height:300px}
 
 /* ── Footer ── */
@@ -87,14 +89,20 @@ footer{text-align:center;padding:32px 16px;background:#f2f2f2;font-size:.78rem;c
   <div class="charts">
 
     <div class="chart-card">
-      <h2>&#128722; Precio importación diesel vs. exportación crudo</h2>
+      <div class="chart-card-hdr">
+        <h2>&#128722; Precio importación diesel vs. exportación crudo</h2>
+        <span class="through-badge" id="through-prices"></span>
+      </div>
       <p>Diesel del Golfo EE.UU. (USD/bbl) &mdash; WTI Crudo (USD/bbl)</p>
       <div class="chart-wrap"><canvas id="chart-prices"></canvas></div>
     </div>
 
     <div class="chart-card">
-      <h2>&#128200; Crack Spread (Diesel &minus; WTI)</h2>
-      <p id="crack-desc">Promedio móvil 15 días: avg(Diesel $/bbl, 15d) &minus; avg(WTI $/bbl, 15d)</p>
+      <div class="chart-card-hdr">
+        <h2>&#128200; Crack Spread (Diesel &minus; WTI)</h2>
+        <span class="through-badge" id="through-crack"></span>
+      </div>
+      <p id="crack-desc">Promedio m&oacute;vil 15 d&iacute;as: avg(Diesel $/bbl, 15d) &minus; avg(WTI $/bbl, 15d)</p>
       <div class="chart-wrap"><canvas id="chart-crack"></canvas></div>
     </div>
 
@@ -187,11 +195,23 @@ function buildCrackDatasets(src){
   }];
 }
 
+// Force the last label to always appear as the final x-axis tick
+function forceLastTick(axis) {
+  const labels = axis.chart.data.labels;
+  if (!labels || !labels.length) return;
+  const last = labels.length - 1;
+  if (!axis.ticks.length) return;
+  if (axis.ticks[axis.ticks.length - 1].value !== last) {
+    axis.ticks[axis.ticks.length - 1] = { value: last, label: labels[last] };
+  }
+}
+
 const commonScales = {
   x: {
     type: 'category',
     ticks: { maxTicksLimit: 10, font: { size: 11 }, color: '#888', maxRotation: 0 },
-    grid: { color: '#f0f0f0' }
+    grid: { color: '#f0f0f0' },
+    afterBuildTicks: forceLastTick,
   },
   y: {
     ticks: { font: { size: 11 }, color: '#888',
@@ -234,8 +254,26 @@ function initCharts(src){
   });
 }
 
+function formatThrough(dateStr) {
+  // dateStr is "YYYY-MM-DD" (daily) or "YYYY-MM" (monthly)
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const parts = dateStr.split('-');
+  const y = parts[0], m = months[parseInt(parts[1],10)-1];
+  return freq === 'monthly'
+    ? 'Through ' + m + ' ' + y
+    : 'Through ' + m + ' ' + parseInt(parts[2],10) + ', ' + y;
+}
+
+function setThroughBadges(src) {
+  const lastDate = src.dates[src.dates.length - 1];
+  const label = formatThrough(lastDate);
+  document.getElementById('through-prices').textContent = label;
+  document.getElementById('through-crack').textContent  = label;
+}
+
 function updateCharts(){
   const src = freq === 'daily' ? DATA.daily : DATA.monthly;
+  setThroughBadges(src);
 
   // Update crack description
   const descs = {
@@ -291,6 +329,7 @@ fetch('data.json')
     DATA = d;
     document.getElementById('badge-updated').textContent =
       'Actualizado: ' + d.updated;
+    setThroughBadges(d.daily);
     initCharts(d.daily);
   })
   .catch(e => console.error('Error loading data.json', e));
