@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Precios Internacionales — Diesel y WTI | Aequus Economics</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#f2f2f2;color:#1d1d1b;min-height:100vh;display:flex;flex-direction:column}
+
+/* ── Aequus nav ── */
+.ae-nav-home{padding:3px 11px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#0f2040;background:#F5F5F5;text-decoration:none;white-space:nowrap;transition:background .12s}
+.ae-nav-home:hover{background:#E0E0E0}
+.ae-nav-dd-wrap{position:relative}
+.ae-nav-dd-btn{padding:3px 11px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#0f2040;background:#F5F5F5;cursor:pointer;white-space:nowrap;transition:background .12s}
+.ae-nav-dd-btn:hover{background:#E0E0E0}
+.ae-nav-dd{display:none;position:absolute;top:calc(100% + 6px);left:0;background:#fff;border:1px solid #dde3ec;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:9999;min-width:210px;overflow:hidden}
+.ae-nav-dd.open{display:block}
+.ae-nav-dd a{display:block;padding:9px 16px;font-size:12px;color:#1a2332;text-decoration:none;transition:background .1s}
+.ae-nav-dd a:hover{background:#f0f4fa}
+.ae-nav-dd a.ae-current{font-weight:700;color:#0f2040;background:#e8edf4}
+
+/* ── Header ── */
+header{background:#0a3373;color:#fff;padding:36px 32px 28px;position:relative}
+.header-nav{display:flex;gap:8px;margin-bottom:20px;align-items:center}
+header h1{font-size:1.6rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
+header p{margin-top:6px;font-size:.9rem;color:rgba(255,255,255,.7)}
+.badge-updated{display:inline-block;margin-top:10px;font-size:.72rem;font-weight:600;letter-spacing:.05em;background:rgba(255,255,255,.15);color:rgba(255,255,255,.85);padding:3px 10px;border-radius:20px}
+
+/* ── Main ── */
+main{flex:1;max-width:1100px;margin:0 auto;padding:32px 24px;width:100%}
+
+/* ── Controls ── */
+.controls{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:28px}
+.tab-group,.ma-group{display:flex;background:#e8edf4;border-radius:8px;overflow:hidden;border:1px solid #d0d8e8}
+.tab-group button,.ma-group button{padding:7px 18px;border:none;background:transparent;font-size:.82rem;font-weight:600;color:#5a6a82;cursor:pointer;transition:background .15s,color .15s;white-space:nowrap}
+.tab-group button.active,.ma-group button.active{background:#0a3373;color:#fff}
+.controls-label{font-size:.78rem;font-weight:600;color:#5a6a82;letter-spacing:.04em;text-transform:uppercase;margin-right:-8px}
+
+/* ── Chart cards ── */
+.charts{display:flex;flex-direction:column;gap:24px}
+.chart-card{background:#fff;border-radius:10px;border:1px solid #e0e0e0;padding:24px 24px 16px}
+.chart-card h2{font-size:.95rem;font-weight:700;color:#0a3373;margin-bottom:4px}
+.chart-card p{font-size:.78rem;color:#888;margin-bottom:16px}
+.chart-wrap{position:relative;height:300px}
+
+/* ── Footer ── */
+footer{text-align:center;padding:32px 16px;background:#f2f2f2;font-size:.78rem;color:#888}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-nav">
+    <a href="../index.html" class="ae-nav-home">&#8592; Menu</a>
+    <div class="ae-nav-dd-wrap">
+      <button class="ae-nav-dd-btn" onclick="aeToggleNav(this)">Dashboards &#9660;</button>
+      <div class="ae-nav-dd">
+        <a href="../homicidios/index.html">&#128506;&#xFE0F; Homicidios Ecuador</a>
+        <a href="../deuda-interna/index.html">&#128202; Deuda Interna</a>
+        <a href="../electricidad/index.html">&#9889; Electricidad &mdash; CCS</a>
+        <a href="../precios-commodities/index.html" class="ae-current">&#128722; Precios Commodities</a>
+      </div>
+    </div>
+  </div>
+  <h1>Precios Internacionales — Diesel y WTI</h1>
+  <p>Precio de importación de diesel del Golfo (USD/bbl) vs. precio de exportación de crudo WTI (USD/bbl)</p>
+  <span class="badge-updated" id="badge-updated">Cargando...</span>
+</header>
+
+<main>
+  <div class="controls">
+    <span class="controls-label">Frecuencia</span>
+    <div class="tab-group">
+      <button id="btn-daily"   class="active" onclick="setFreq('daily')">Diario</button>
+      <button id="btn-monthly"             onclick="setFreq('monthly')">Mensual</button>
+    </div>
+    <span class="controls-label" style="margin-left:8px">Promedio</span>
+    <div class="ma-group">
+      <button id="btn-raw" class="active" onclick="setMA('raw')">Datos crudos</button>
+      <button id="btn-ma1"               onclick="setMA('ma1')" id="btn-ma1">15d MA</button>
+      <button id="btn-ma2"               onclick="setMA('ma2')" id="btn-ma2">30d MA</button>
+    </div>
+  </div>
+
+  <div class="charts">
+
+    <div class="chart-card">
+      <h2>&#128722; Precio importación diesel vs. exportación crudo</h2>
+      <p>Diesel del Golfo EE.UU. (USD/bbl) &mdash; WTI Crudo (USD/bbl)</p>
+      <div class="chart-wrap"><canvas id="chart-prices"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <h2>&#128200; Crack Spread (Diesel &minus; WTI)</h2>
+      <p id="crack-desc">Promedio móvil 15 días: avg(Diesel $/bbl, 15d) &minus; avg(WTI $/bbl, 15d)</p>
+      <div class="chart-wrap"><canvas id="chart-crack"></canvas></div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  Fuente: FRED &mdash; DDFUELUSGULF, DCOILWTICO &nbsp;|&nbsp; Aequus Economics
+</footer>
+
+<script>
+function aeToggleNav(btn){btn.nextElementSibling.classList.toggle('open')}
+document.addEventListener('click',function(e){if(!e.target.closest('.ae-nav-dd-wrap'))document.querySelectorAll('.ae-nav-dd').forEach(function(d){d.classList.remove('open')})});
+
+let DATA = null;
+let freq = 'daily';
+let maMode = 'raw';
+
+const COLORS = {
+  diesel: '#0a3373',
+  wti:    '#c0392b',
+  crack:  '#27ae60',
+};
+
+function nullToNaN(arr){ return arr.map(v => v === null ? NaN : v); }
+
+function getSeriesKey(base){
+  if(maMode === 'raw') return base;
+  if(freq === 'daily'){
+    if(maMode === 'ma1') return base + '_ma15';
+    if(maMode === 'ma2') return base + '_ma30';
+  } else {
+    if(maMode === 'ma1') return base + '_ma3';
+    if(maMode === 'ma2') return base + '_ma6';
+  }
+  return base;
+}
+
+function buildPriceDatasets(src){
+  const dslKey = freq === 'daily' ? getSeriesKey('diesel') : getSeriesKey('diesel_bbl');
+  const wtiKey = freq === 'daily' ? getSeriesKey('wti')    : getSeriesKey('wti_bbl');
+
+  // For daily raw we use diesel_bbl / wti_bbl as base keys
+  const dslActualKey = freq === 'daily'
+    ? (maMode === 'raw' ? 'diesel_bbl' : 'diesel_' + (maMode === 'ma1' ? 'ma15' : 'ma30'))
+    : (maMode === 'raw' ? 'diesel_bbl' : 'diesel_' + (maMode === 'ma1' ? 'ma3'  : 'ma6'));
+
+  const wtiActualKey = freq === 'daily'
+    ? (maMode === 'raw' ? 'wti_bbl'    : 'wti_'    + (maMode === 'ma1' ? 'ma15' : 'ma30'))
+    : (maMode === 'raw' ? 'wti_bbl'    : 'wti_'    + (maMode === 'ma1' ? 'ma3'  : 'ma6'));
+
+  return [
+    {
+      label: 'Diesel del Golfo (USD/bbl)',
+      data: nullToNaN(src[dslActualKey]),
+      borderColor: COLORS.diesel,
+      backgroundColor: COLORS.diesel + '18',
+      borderWidth: freq === 'daily' ? 1.2 : 2,
+      pointRadius: 0,
+      tension: 0.2,
+      fill: false,
+    },
+    {
+      label: 'WTI Crudo (USD/bbl)',
+      data: nullToNaN(src[wtiActualKey]),
+      borderColor: COLORS.wti,
+      backgroundColor: COLORS.wti + '18',
+      borderWidth: freq === 'daily' ? 1.2 : 2,
+      pointRadius: 0,
+      tension: 0.2,
+      fill: false,
+    }
+  ];
+}
+
+function buildCrackDatasets(src){
+  const crackKey = freq === 'daily'
+    ? (maMode === 'raw' ? 'crack' : maMode === 'ma1' ? 'crack' : 'crack_ma30')
+    : (maMode === 'raw' ? 'crack' : maMode === 'ma1' ? 'crack_ma3' : 'crack_ma6');
+
+  return [{
+    label: 'Crack Spread (USD/bbl)',
+    data: nullToNaN(src[crackKey]),
+    borderColor: COLORS.crack,
+    backgroundColor: COLORS.crack + '20',
+    borderWidth: freq === 'daily' ? 1.2 : 2,
+    pointRadius: 0,
+    tension: 0.2,
+    fill: true,
+  }];
+}
+
+const commonScales = {
+  x: {
+    type: 'category',
+    ticks: { maxTicksLimit: 10, font: { size: 11 }, color: '#888', maxRotation: 0 },
+    grid: { color: '#f0f0f0' }
+  },
+  y: {
+    ticks: { font: { size: 11 }, color: '#888',
+      callback: v => '$' + v.toFixed(0) },
+    grid: { color: '#f0f0f0' }
+  }
+};
+
+const commonPlugins = {
+  legend: { position: 'top', labels: { font: { size: 11 }, usePointStyle: true, padding: 16 } },
+  tooltip: {
+    mode: 'index', intersect: false,
+    callbacks: { label: ctx => ' ' + ctx.dataset.label + ': $' + ctx.parsed.y.toFixed(2) }
+  }
+};
+
+let chartPrices = null, chartCrack = null;
+
+function initCharts(src){
+  if(chartPrices) chartPrices.destroy();
+  if(chartCrack)  chartCrack.destroy();
+
+  chartPrices = new Chart(document.getElementById('chart-prices'), {
+    type: 'line',
+    data: { labels: src.dates, datasets: buildPriceDatasets(src) },
+    options: { responsive: true, maintainAspectRatio: false, animation: false,
+      scales: commonScales, plugins: commonPlugins }
+  });
+
+  chartCrack = new Chart(document.getElementById('chart-crack'), {
+    type: 'line',
+    data: { labels: src.dates, datasets: buildCrackDatasets(src) },
+    options: { responsive: true, maintainAspectRatio: false, animation: false,
+      scales: {
+        ...commonScales,
+        y: { ...commonScales.y, ticks: { ...commonScales.y.ticks,
+          callback: v => '$' + v.toFixed(1) } }
+      },
+      plugins: commonPlugins }
+  });
+}
+
+function updateCharts(){
+  const src = freq === 'daily' ? DATA.daily : DATA.monthly;
+
+  // Update crack description
+  const descs = {
+    daily: {
+      raw:  'Dato diario: avg(Diesel $/bbl, 15d) &minus; avg(WTI $/bbl, 15d)',
+      ma1:  'Promedio m&oacute;vil 15 d&iacute;as del crack spread diario',
+      ma2:  'Promedio m&oacute;vil 30 d&iacute;as del crack spread diario',
+    },
+    monthly: {
+      raw:  'Promedio mensual del crack spread diario',
+      ma1:  'Promedio m&oacute;vil 3 meses del crack spread mensual',
+      ma2:  'Promedio m&oacute;vil 6 meses del crack spread mensual',
+    }
+  };
+  document.getElementById('crack-desc').innerHTML = descs[freq][maMode];
+
+  // Update MA button labels
+  if(freq === 'daily'){
+    document.getElementById('btn-ma1').textContent = '15d MA';
+    document.getElementById('btn-ma2').textContent = '30d MA';
+  } else {
+    document.getElementById('btn-ma1').textContent = '3m MA';
+    document.getElementById('btn-ma2').textContent = '6m MA';
+  }
+
+  chartPrices.data.labels   = src.dates;
+  chartPrices.data.datasets = buildPriceDatasets(src);
+  chartPrices.update();
+
+  chartCrack.data.labels   = src.dates;
+  chartCrack.data.datasets = buildCrackDatasets(src);
+  chartCrack.update();
+}
+
+function setFreq(f){
+  freq = f;
+  document.getElementById('btn-daily').classList.toggle('active', f === 'daily');
+  document.getElementById('btn-monthly').classList.toggle('active', f === 'monthly');
+  updateCharts();
+}
+
+function setMA(m){
+  maMode = m;
+  document.getElementById('btn-raw').classList.toggle('active', m === 'raw');
+  document.getElementById('btn-ma1').classList.toggle('active', m === 'ma1');
+  document.getElementById('btn-ma2').classList.toggle('active', m === 'ma2');
+  updateCharts();
+}
+
+fetch('data.json')
+  .then(r => r.json())
+  .then(d => {
+    DATA = d;
+    document.getElementById('badge-updated').textContent =
+      'Actualizado: ' + d.updated;
+    initCharts(d.daily);
+  })
+  .catch(e => console.error('Error loading data.json', e));
+</script>
+</body>
+</html>
