@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Diesel y WTI | Aequus Economics</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#f2f2f2;color:#1d1d1b;min-height:100vh;display:flex;flex-direction:column}
@@ -47,6 +48,10 @@ main{flex:1;max-width:1100px;margin:0 auto;padding:32px 24px;width:100%}
 .chart-card p{font-size:.78rem;color:#888;margin-bottom:16px;margin-top:4px}
 .chart-wrap{position:relative;height:300px}
 
+/* ── Download button ── */
+.dl-btn{padding:7px 16px;border:1px solid #0a3373;border-radius:8px;background:#fff;color:#0a3373;font-size:.82rem;font-weight:600;cursor:pointer;transition:background .15s,color .15s;white-space:nowrap}
+.dl-btn:hover{background:#0a3373;color:#fff}
+
 /* ── Footer ── */
 footer{text-align:center;padding:32px 16px;background:#f2f2f2;font-size:.78rem;color:#888}
 </style>
@@ -78,6 +83,7 @@ footer{text-align:center;padding:32px 16px;background:#f2f2f2;font-size:.78rem;c
       <button id="btn-daily"   class="active" onclick="setFreq('daily')">Diario</button>
       <button id="btn-monthly"             onclick="setFreq('monthly')">Mensual</button>
     </div>
+    <button class="dl-btn" onclick="downloadXLSX()">&#11015; Descargar XLSX</button>
     <span class="controls-label" style="margin-left:8px">Promedio</span>
     <div class="ma-group">
       <button id="btn-raw" class="active" onclick="setMA('raw')">Datos crudos</button>
@@ -321,6 +327,28 @@ function setMA(m){
   document.getElementById('btn-ma1').classList.toggle('active', m === 'ma1');
   document.getElementById('btn-ma2').classList.toggle('active', m === 'ma2');
   updateCharts();
+}
+
+function downloadXLSX() {
+  if (!DATA) return;
+  const d = DATA.daily, m = DATA.monthly;
+
+  // Daily sheet
+  const dailyRows = [['Fecha', 'Diesel (USD/gal)', 'Diesel (USD/bbl)', 'WTI (USD/bbl)', 'Crack Spread 15d (USD/bbl)']];
+  for (let i = 0; i < d.dates.length; i++) {
+    dailyRows.push([d.dates[i], d.diesel_gal[i], d.diesel_bbl[i], d.wti_bbl[i], d.crack[i]]);
+  }
+
+  // Monthly sheet
+  const monthlyRows = [['Mes', 'Diesel prom. (USD/gal)', 'Diesel prom. (USD/bbl)', 'WTI prom. (USD/bbl)', 'Crack Spread prom. (USD/bbl)']];
+  for (let i = 0; i < m.dates.length; i++) {
+    monthlyRows.push([m.dates[i], m.diesel_gal[i], m.diesel_bbl[i], m.wti_bbl[i], m.crack[i]]);
+  }
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dailyRows),   'Diario');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(monthlyRows), 'Mensual');
+  XLSX.writeFile(wb, 'Diesel_WTI_' + DATA.updated + '.xlsx');
 }
 
 fetch('data.json')
