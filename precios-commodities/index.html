@@ -6,6 +6,7 @@
 <title>Diesel y WTI | Aequus Economics</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="petroleo_data.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#f2f2f2;color:#1d1d1b;min-height:100vh;display:flex;flex-direction:column}
@@ -30,30 +31,41 @@ header p{margin-top:6px;font-size:.9rem;color:rgba(255,255,255,.7)}
 .badge-updated{display:inline-block;margin-top:10px;font-size:.72rem;font-weight:600;letter-spacing:.05em;background:rgba(255,255,255,.15);color:rgba(255,255,255,.85);padding:3px 10px;border-radius:20px}
 
 /* ── Main ── */
-main{flex:1;max-width:1100px;margin:0 auto;padding:32px 24px;width:100%}
+main{flex:1;max-width:1200px;margin:0 auto;padding:32px 24px;width:100%}
 
-/* ── Controls ── */
-.controls{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:28px}
-.tab-group,.ma-group{display:flex;background:#e8edf4;border-radius:8px;overflow:hidden;border:1px solid #d0d8e8}
-.tab-group button,.ma-group button{padding:7px 18px;border:none;background:transparent;font-size:.82rem;font-weight:600;color:#5a6a82;cursor:pointer;transition:background .15s,color .15s;white-space:nowrap}
-.tab-group button.active,.ma-group button.active{background:#0a3373;color:#fff}
-.controls-label{font-size:.78rem;font-weight:600;color:#5a6a82;letter-spacing:.04em;text-transform:uppercase;margin-right:-8px}
+/* ── Dashboard grid ── */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.dash-full{grid-column:1/-1}
 
 /* ── Chart cards ── */
-.charts{display:flex;flex-direction:column;gap:24px}
-.chart-card{background:#fff;border-radius:10px;border:1px solid #e0e0e0;padding:24px 24px 16px}
-.chart-card-hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:4px}
-.chart-card h2{font-size:.95rem;font-weight:700;color:#0a3373}
+.chart-card{background:#fff;border-radius:10px;border:1px solid #e0e0e0;padding:20px 20px 14px;display:flex;flex-direction:column;gap:6px}
+.chart-card-hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.chart-card h2{font-size:.92rem;font-weight:700;color:#0a3373}
+.chart-card p{font-size:.76rem;color:#888}
 .through-badge{font-size:.7rem;font-weight:600;color:#1a7a45;background:#d1f0e0;padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0}
-.chart-card p{font-size:.78rem;color:#888;margin-bottom:16px;margin-top:4px}
-.chart-wrap{position:relative;height:300px}
+.chart-wrap{position:relative;height:280px}
 
-/* ── Download button ── */
-.dl-btn{padding:7px 16px;border:1px solid #0a3373;border-radius:8px;background:#fff;color:#0a3373;font-size:.82rem;font-weight:600;cursor:pointer;transition:background .15s,color .15s;white-space:nowrap}
+/* ── Controls (inside international card) ── */
+.intl-controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.tab-group,.ma-group{display:flex;background:#e8edf4;border-radius:8px;overflow:hidden;border:1px solid #d0d8e8}
+.tab-group button,.ma-group button{padding:5px 14px;border:none;background:transparent;font-size:.78rem;font-weight:600;color:#5a6a82;cursor:pointer;transition:background .15s,color .15s;white-space:nowrap}
+.tab-group button.active,.ma-group button.active{background:#0a3373;color:#fff}
+.controls-label{font-size:.75rem;font-weight:600;color:#5a6a82;letter-spacing:.04em;text-transform:uppercase}
+.dl-btn{padding:5px 13px;border:1px solid #0a3373;border-radius:8px;background:#fff;color:#0a3373;font-size:.78rem;font-weight:600;cursor:pointer;transition:background .15s,color .15s;white-space:nowrap}
 .dl-btn:hover{background:#0a3373;color:#fff}
 
+/* ── View toggle (prices vs crack) ── */
+.view-toggle{display:flex;background:#e8edf4;border-radius:8px;overflow:hidden;border:1px solid #d0d8e8;flex-shrink:0}
+.view-toggle button{padding:4px 12px;border:none;background:transparent;font-size:.75rem;font-weight:600;color:#5a6a82;cursor:pointer;transition:background .15s,color .15s}
+.view-toggle button.active{background:#0a3373;color:#fff}
+
+/* ── Section divider ── */
+.section-hdr{grid-column:1/-1;border-top:2px solid #e0e0e0;padding-top:8px;margin-top:4px}
+.section-hdr h3{font-size:.85rem;font-weight:700;color:#0a3373;text-transform:uppercase;letter-spacing:.05em}
+.section-hdr p{font-size:.75rem;color:#aaa;margin-top:2px}
+
 /* ── Footer ── */
-footer{text-align:center;padding:32px 16px;background:#f2f2f2;font-size:.78rem;color:#888}
+footer{text-align:center;padding:28px 16px;background:#f2f2f2;font-size:.76rem;color:#888}
 </style>
 </head>
 <body>
@@ -72,295 +84,416 @@ footer{text-align:center;padding:32px 16px;background:#f2f2f2;font-size:.78rem;c
     </div>
   </div>
   <h1>Diesel y WTI</h1>
-  <p>Precio de importación de diesel del Golfo (USD/bbl) vs. precio de exportación de crudo WTI (USD/bbl)</p>
+  <p>Precios internacionales de commodities energ&eacute;ticos y sector petrolero ecuatoriano</p>
   <span class="badge-updated" id="badge-updated">Cargando...</span>
 </header>
 
 <main>
-  <div class="controls">
-    <span class="controls-label">Frecuencia</span>
-    <div class="tab-group">
-      <button id="btn-daily"   class="active" onclick="setFreq('daily')">Diario</button>
-      <button id="btn-monthly"             onclick="setFreq('monthly')">Mensual</button>
+<div class="dash-grid">
+
+  <!-- ─── SECTION: International ─────────────────────────────── -->
+  <div class="section-hdr" style="display:grid;grid-template-columns:1fr 1fr auto;gap:20px;align-items:center">
+    <div>
+      <a href="scenario.html" style="display:inline-flex;align-items:center;gap:8px;
+         background:#0a3373;color:#fff;padding:9px 18px;border-radius:8px;
+         font-size:.82rem;font-weight:700;text-decoration:none;letter-spacing:.01em;
+         box-shadow:0 2px 8px rgba(10,51,115,.25)">
+        &#128200; An&aacute;lisis de Sensibilidad &rarr;
+      </a>
     </div>
-    <button class="dl-btn" onclick="downloadXLSX()">&#11015; Descargar XLSX</button>
-    <span class="controls-label" style="margin-left:8px">Promedio</span>
-    <div class="ma-group">
-      <button id="btn-raw" class="active" onclick="setMA('raw')">Datos crudos</button>
-      <button id="btn-ma1"               onclick="setMA('ma1')" id="btn-ma1">15d MA</button>
-      <button id="btn-ma2"               onclick="setMA('ma2')" id="btn-ma2">30d MA</button>
+    <div>
+      <h3>Precios Internacionales</h3>
+      <p>Fuente: FRED &mdash; DDFUELUSGULF, DCOILWTICO</p>
+    </div>
+    <div>
+      <button class="dl-btn" onclick="downloadAllXLSX()">&#11015; Descargar XLSX</button>
     </div>
   </div>
 
-  <div class="charts">
-
-    <div class="chart-card">
-      <div class="chart-card-hdr">
-        <h2>&#128722; Precio importación diesel vs. exportación crudo</h2>
-        <span class="through-badge" id="through-prices"></span>
+  <!-- Row 1 Left: International prices with toggle -->
+  <div class="chart-card">
+    <div class="chart-card-hdr">
+      <h2 id="intl-title">&#128722; Diesel del Golfo vs. WTI</h2>
+      <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
+        <span class="through-badge" id="through-intl"></span>
+        <div class="view-toggle">
+          <button id="vbtn-prices" class="active" onclick="setView('prices')">Precios</button>
+          <button id="vbtn-crack"                onclick="setView('crack')">Crack Spread</button>
+        </div>
       </div>
-      <p>Diesel del Golfo EE.UU. (USD/bbl) &mdash; WTI Crudo (USD/bbl)</p>
-      <div class="chart-wrap"><canvas id="chart-prices"></canvas></div>
     </div>
-
-    <div class="chart-card">
-      <div class="chart-card-hdr">
-        <h2>&#128200; Crack Spread (Diesel &minus; WTI)</h2>
-        <span class="through-badge" id="through-crack"></span>
+    <p id="intl-desc">Diesel del Golfo EE.UU. (USD/bbl) &mdash; WTI Crudo (USD/bbl)</p>
+    <div class="intl-controls">
+      <span class="controls-label">Frecuencia</span>
+      <div class="tab-group">
+        <button id="btn-daily"   class="active" onclick="setFreq('daily')">Diario</button>
+        <button id="btn-monthly"               onclick="setFreq('monthly')">Mensual</button>
       </div>
-      <p id="crack-desc">Promedio m&oacute;vil 15 d&iacute;as: avg(Diesel $/bbl, 15d) &minus; avg(WTI $/bbl, 15d)</p>
-      <div class="chart-wrap"><canvas id="chart-crack"></canvas></div>
+      <span class="controls-label">Promedio</span>
+      <div class="ma-group">
+        <button id="btn-raw" class="active" onclick="setMA('raw')">Crudo</button>
+        <button id="btn-ma1"               onclick="setMA('ma1')">15d MA</button>
+        <button id="btn-ma2"               onclick="setMA('ma2')">30d MA</button>
+      </div>
     </div>
-
+    <div class="chart-wrap" id="wrap-prices"><canvas id="chart-prices"></canvas></div>
+    <div class="chart-wrap" id="wrap-crack" style="display:none"><canvas id="chart-crack"></canvas></div>
   </div>
+
+  <!-- Row 1 Right: Ecuador crude differential -->
+  <div class="chart-card">
+    <div class="chart-card-hdr">
+      <h2>&#128200; Diferencial crudo ecuatoriano vs. WTI</h2>
+      <span class="through-badge">Mar-2026</span>
+    </div>
+    <p>WTI menos precio de exportaci&oacute;n EP (USD/bbl) &mdash; valor positivo = Ecuador exporta con descuento al WTI &mdash; l&iacute;nea oscura: media m&oacute;vil 12 meses</p>
+    <div class="chart-wrap"><canvas id="c-diff"></canvas></div>
+  </div>
+
+  <!-- ─── SECTION: Volumes ────────────────────────────────────── -->
+  <div class="section-hdr" style="display:flex;justify-content:space-between;align-items:flex-end">
+    <div>
+      <h3>Vol&uacute;menes &mdash; Sector Petrolero Ecuador</h3>
+      <p>Fuente: BCE &mdash; EP Petroecuador &nbsp;|&nbsp; Mensual &nbsp;|&nbsp; Suma m&oacute;vil 12 meses</p>
+    </div>
+  </div>
+
+  <!-- Row 2 Left: Export/import ratio -->
+  <div class="chart-card">
+    <div class="chart-card-hdr">
+      <h2>&#9878;&#xFE0F; Ratio exportaciones / importaciones de derivados</h2>
+    </div>
+    <p>Suma m&oacute;vil 12 meses &mdash; exportaciones totales (petr&oacute;leo + derivados) sobre importaciones de nafta y di&eacute;sel</p>
+    <div class="chart-wrap"><canvas id="c-ratio"></canvas></div>
+  </div>
+
+  <!-- Row 2 Right: 12m exports vs imports volumes -->
+  <div class="chart-card">
+    <div class="chart-card-hdr">
+      <h2>&#128668; Exportaciones vs. importaci&oacute;n de derivados</h2>
+    </div>
+    <p>Suma m&oacute;vil 12 meses, miles de barriles &mdash; exportaciones totales (petr&oacute;leo + derivados) vs. importaci&oacute;n de derivados</p>
+    <div class="chart-wrap"><canvas id="c-vols"></canvas></div>
+  </div>
+
+  <!-- ─── SECTION: Prices & Fiscal ───────────────────────────── -->
+  <div class="section-hdr">
+    <h3>Precios de Importaci&oacute;n y Balance Fiscal</h3>
+    <p>Fuente: BCE &mdash; EP Petroecuador &nbsp;|&nbsp; Mensual</p>
+  </div>
+
+  <!-- Row 3 Left: Derivative import prices -->
+  <div class="chart-card">
+    <div class="chart-card-hdr">
+      <h2>&#128020; Precios de importaci&oacute;n de derivados</h2>
+    </div>
+    <p>USD por barril &mdash; Nafta, Di&eacute;sel, GLP y precio ponderado por volumen (l&iacute;nea discontinua)</p>
+    <div class="chart-wrap"><canvas id="c-prices"></canvas></div>
+  </div>
+
+  <!-- Row 3 Right: Cost vs sales + shaded gap -->
+  <div class="chart-card">
+    <div class="chart-card-hdr">
+      <h2>&#128181; Costo importaci&oacute;n vs. ventas internas &mdash; Nafta y Di&eacute;sel</h2>
+    </div>
+    <p>Suma m&oacute;vil 12 meses, millones USD &mdash; &aacute;rea sombreada: diferencial (subsidio impl&iacute;cito)</p>
+    <div class="chart-wrap"><canvas id="c-costsales"></canvas></div>
+  </div>
+
+  <!-- Row 4: Net balance full width -->
+  <div class="section-hdr">
+    <h3>Balance Neto de Comercializaci&oacute;n</h3>
+    <p>Fuente: BCE &mdash; EP Petroecuador &nbsp;|&nbsp; Mensual</p>
+  </div>
+
+  <div class="chart-card dash-full">
+    <div class="chart-card-hdr">
+      <h2>&#9878;&#xFE0F; Ventas internas menos costo de importaci&oacute;n &mdash; Nafta, Di&eacute;sel y GLP</h2>
+    </div>
+    <p>Suma m&oacute;vil 12 meses, millones USD &mdash; valores negativos indican subsidio neto al consumidor</p>
+    <div class="chart-wrap" style="height:260px"><canvas id="c-net"></canvas></div>
+  </div>
+
+</div><!-- end dash-grid -->
 </main>
 
 <footer>
-  Fuente: FRED &mdash; DDFUELUSGULF, DCOILWTICO &nbsp;|&nbsp; Aequus Economics
+  Fuente: FRED &mdash; DDFUELUSGULF, DCOILWTICO &nbsp;|&nbsp; BCE &mdash; EP Petroecuador &nbsp;|&nbsp; Aequus Economics
 </footer>
 
 <script>
+/* ── Nav ── */
 function aeToggleNav(btn){btn.nextElementSibling.classList.toggle('open')}
 document.addEventListener('click',function(e){if(!e.target.closest('.ae-nav-dd-wrap'))document.querySelectorAll('.ae-nav-dd').forEach(function(d){d.classList.remove('open')})});
 
+/* ══════════════════════════════════════════════════════════════
+   INTERNATIONAL PRICES (FRED data via fetch)
+   ══════════════════════════════════════════════════════════════ */
 let DATA = null;
 let freq = 'daily';
 let maMode = 'raw';
+let currentView = 'prices';
 
-const COLORS = {
-  diesel: '#0a3373',
-  wti:    '#c0392b',
-  crack:  '#27ae60',
-};
+const COLORS = { diesel:'#0a3373', wti:'#c0392b', crack:'#27ae60' };
 
 function nullToNaN(arr){ return arr.map(v => v === null ? NaN : v); }
 
-function getSeriesKey(base){
-  if(maMode === 'raw') return base;
-  if(freq === 'daily'){
-    if(maMode === 'ma1') return base + '_ma15';
-    if(maMode === 'ma2') return base + '_ma30';
-  } else {
-    if(maMode === 'ma1') return base + '_ma3';
-    if(maMode === 'ma2') return base + '_ma6';
-  }
-  return base;
+function buildTicks(axis) {
+  const labels = axis.chart.data.labels;
+  if (!labels || labels.length < 2) return;
+  const n = labels.length;
+  const want = Math.min(9, n);
+  const step = (n - 1) / (want - 1);
+  const indices = new Set();
+  for (let i = 0; i < want - 1; i++) indices.add(Math.round(i * step));
+  indices.add(n - 1); // always include last data point
+  axis.ticks = [...indices].sort((a, b) => a - b).map(i => ({ value: i, label: labels[i] }));
 }
 
-function buildPriceDatasets(src){
-  const dslKey = freq === 'daily' ? getSeriesKey('diesel') : getSeriesKey('diesel_bbl');
-  const wtiKey = freq === 'daily' ? getSeriesKey('wti')    : getSeriesKey('wti_bbl');
+const zeroOnly = { color: ctx => ctx.tick.value === 0 ? '#B0BEC5' : 'transparent' };
 
-  // For daily raw we use diesel_bbl / wti_bbl as base keys
-  const dslActualKey = freq === 'daily'
-    ? (maMode === 'raw' ? 'diesel_bbl' : 'diesel_' + (maMode === 'ma1' ? 'ma15' : 'ma30'))
-    : (maMode === 'raw' ? 'diesel_bbl' : 'diesel_' + (maMode === 'ma1' ? 'ma3'  : 'ma6'));
+const commonScales = {
+  x: { type:'category', ticks:{ maxTicksLimit:10, font:{size:11}, color:'#888', maxRotation:0 },
+       grid:{ display:false }, afterBuildTicks: buildTicks },
+  y: { ticks:{ font:{size:11}, color:'#888', callback: v => '$' + v.toFixed(0) }, grid: zeroOnly }
+};
+const commonPlugins = {
+  legend:{ position:'top', labels:{ font:{size:11}, usePointStyle:true, padding:14 } },
+  tooltip:{ mode:'index', intersect:false, callbacks:{ label: ctx => ' ' + ctx.dataset.label + ': $' + ctx.parsed.y.toFixed(2) } }
+};
 
-  const wtiActualKey = freq === 'daily'
-    ? (maMode === 'raw' ? 'wti_bbl'    : 'wti_'    + (maMode === 'ma1' ? 'ma15' : 'ma30'))
-    : (maMode === 'raw' ? 'wti_bbl'    : 'wti_'    + (maMode === 'ma1' ? 'ma3'  : 'ma6'));
+let chartIntlPrices = null, chartIntlCrack = null;
 
+function buildPriceDatasets(src) {
+  const dKey = freq==='daily' ? (maMode==='raw'?'diesel_bbl':maMode==='ma1'?'diesel_ma15':'diesel_ma30')
+                               : (maMode==='raw'?'diesel_bbl':maMode==='ma1'?'diesel_ma3':'diesel_ma6');
+  const wKey = freq==='daily' ? (maMode==='raw'?'wti_bbl':maMode==='ma1'?'wti_ma15':'wti_ma30')
+                               : (maMode==='raw'?'wti_bbl':maMode==='ma1'?'wti_ma3':'wti_ma6');
   return [
-    {
-      label: 'Diesel del Golfo (USD/bbl)',
-      data: nullToNaN(src[dslActualKey]),
-      borderColor: COLORS.diesel,
-      backgroundColor: COLORS.diesel + '18',
-      borderWidth: freq === 'daily' ? 1.2 : 2,
-      pointRadius: 0,
-      tension: 0.2,
-      fill: false,
-    },
-    {
-      label: 'WTI Crudo (USD/bbl)',
-      data: nullToNaN(src[wtiActualKey]),
-      borderColor: COLORS.wti,
-      backgroundColor: COLORS.wti + '18',
-      borderWidth: freq === 'daily' ? 1.2 : 2,
-      pointRadius: 0,
-      tension: 0.2,
-      fill: false,
-    }
+    { label:'Diesel del Golfo (USD/bbl)', data:nullToNaN(src[dKey]),
+      borderColor:COLORS.diesel, borderWidth:freq==='daily'?1.2:2, pointRadius:0, tension:0.2, fill:false },
+    { label:'WTI Crudo (USD/bbl)', data:nullToNaN(src[wKey]),
+      borderColor:COLORS.wti, borderWidth:freq==='daily'?1.2:2, pointRadius:0, tension:0.2, fill:false }
   ];
 }
 
-function buildCrackDatasets(src){
-  const crackKey = freq === 'daily'
-    ? (maMode === 'raw' ? 'crack' : maMode === 'ma1' ? 'crack' : 'crack_ma30')
-    : (maMode === 'raw' ? 'crack' : maMode === 'ma1' ? 'crack_ma3' : 'crack_ma6');
-
-  return [{
-    label: 'Crack Spread (USD/bbl)',
-    data: nullToNaN(src[crackKey]),
-    borderColor: COLORS.crack,
-    backgroundColor: COLORS.crack + '20',
-    borderWidth: freq === 'daily' ? 1.2 : 2,
-    pointRadius: 0,
-    tension: 0.2,
-    fill: true,
-  }];
-}
-
-// Force the last label to always appear as the final x-axis tick
-function forceLastTick(axis) {
-  const labels = axis.chart.data.labels;
-  if (!labels || !labels.length) return;
-  const last = labels.length - 1;
-  if (!axis.ticks.length) return;
-  if (axis.ticks[axis.ticks.length - 1].value !== last) {
-    axis.ticks[axis.ticks.length - 1] = { value: last, label: labels[last] };
-  }
-}
-
-const commonScales = {
-  x: {
-    type: 'category',
-    ticks: { maxTicksLimit: 10, font: { size: 11 }, color: '#888', maxRotation: 0 },
-    grid: { color: '#f0f0f0' },
-    afterBuildTicks: forceLastTick,
-  },
-  y: {
-    ticks: { font: { size: 11 }, color: '#888',
-      callback: v => '$' + v.toFixed(0) },
-    grid: { color: '#f0f0f0' }
-  }
-};
-
-const commonPlugins = {
-  legend: { position: 'top', labels: { font: { size: 11 }, usePointStyle: true, padding: 16 } },
-  tooltip: {
-    mode: 'index', intersect: false,
-    callbacks: { label: ctx => ' ' + ctx.dataset.label + ': $' + ctx.parsed.y.toFixed(2) }
-  }
-};
-
-let chartPrices = null, chartCrack = null;
-
-function initCharts(src){
-  if(chartPrices) chartPrices.destroy();
-  if(chartCrack)  chartCrack.destroy();
-
-  chartPrices = new Chart(document.getElementById('chart-prices'), {
-    type: 'line',
-    data: { labels: src.dates, datasets: buildPriceDatasets(src) },
-    options: { responsive: true, maintainAspectRatio: false, animation: false,
-      scales: commonScales, plugins: commonPlugins }
-  });
-
-  chartCrack = new Chart(document.getElementById('chart-crack'), {
-    type: 'line',
-    data: { labels: src.dates, datasets: buildCrackDatasets(src) },
-    options: { responsive: true, maintainAspectRatio: false, animation: false,
-      scales: {
-        ...commonScales,
-        y: { ...commonScales.y, ticks: { ...commonScales.y.ticks,
-          callback: v => '$' + v.toFixed(1) } }
-      },
-      plugins: commonPlugins }
-  });
+function buildCrackDatasets(src) {
+  const cKey = freq==='daily' ? (maMode==='ma2'?'crack_ma30':'crack')
+                               : (maMode==='raw'?'crack':maMode==='ma1'?'crack_ma3':'crack_ma6');
+  return [{ label:'Crack Spread (USD/bbl)', data:nullToNaN(src[cKey]),
+            borderColor:COLORS.crack, borderWidth:freq==='daily'?1.2:2, pointRadius:0, tension:0.2, fill:true,
+            backgroundColor:COLORS.crack+'20' }];
 }
 
 function formatThrough(dateStr) {
-  // dateStr is "YYYY-MM-DD" (daily) or "YYYY-MM" (monthly)
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const parts = dateStr.split('-');
-  const y = parts[0], m = months[parseInt(parts[1],10)-1];
-  return freq === 'monthly'
-    ? 'Through ' + m + ' ' + y
-    : 'Through ' + m + ' ' + parseInt(parts[2],10) + ', ' + y;
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const p=dateStr.split('-');
+  return freq==='monthly' ? 'Through '+months[parseInt(p[1],10)-1]+' '+p[0]
+                          : 'Through '+months[parseInt(p[1],10)-1]+' '+parseInt(p[2],10)+', '+p[0];
 }
 
-function setThroughBadges(src) {
-  const lastDate = src.dates[src.dates.length - 1];
-  const label = formatThrough(lastDate);
-  document.getElementById('through-prices').textContent = label;
-  document.getElementById('through-crack').textContent  = label;
+function initIntlCharts(src) {
+  if(chartIntlPrices) chartIntlPrices.destroy();
+  if(chartIntlCrack)  chartIntlCrack.destroy();
+  chartIntlPrices = new Chart(document.getElementById('chart-prices'),{
+    type:'line', data:{ labels:src.dates, datasets:buildPriceDatasets(src) },
+    options:{ responsive:true, maintainAspectRatio:false, animation:false,
+      scales:commonScales, plugins:commonPlugins }
+  });
+  chartIntlCrack = new Chart(document.getElementById('chart-crack'),{
+    type:'line', data:{ labels:src.dates, datasets:buildCrackDatasets(src) },
+    options:{ responsive:true, maintainAspectRatio:false, animation:false,
+      scales:{ ...commonScales, y:{ ...commonScales.y, ticks:{ ...commonScales.y.ticks, callback:v=>'$'+v.toFixed(1) } } },
+      plugins:commonPlugins }
+  });
+  document.getElementById('through-intl').textContent = formatThrough(src.dates[src.dates.length-1]);
 }
 
-function updateCharts(){
-  const src = freq === 'daily' ? DATA.daily : DATA.monthly;
-  setThroughBadges(src);
-
-  // Update crack description
-  const descs = {
-    daily: {
-      raw:  'Dato diario: avg(Diesel $/bbl, 15d) &minus; avg(WTI $/bbl, 15d)',
-      ma1:  'Promedio m&oacute;vil 15 d&iacute;as del crack spread diario',
-      ma2:  'Promedio m&oacute;vil 30 d&iacute;as del crack spread diario',
-    },
-    monthly: {
-      raw:  'Promedio mensual del crack spread diario',
-      ma1:  'Promedio m&oacute;vil 3 meses del crack spread mensual',
-      ma2:  'Promedio m&oacute;vil 6 meses del crack spread mensual',
-    }
-  };
-  document.getElementById('crack-desc').innerHTML = descs[freq][maMode];
-
-  // Update MA button labels
-  if(freq === 'daily'){
-    document.getElementById('btn-ma1').textContent = '15d MA';
-    document.getElementById('btn-ma2').textContent = '30d MA';
-  } else {
-    document.getElementById('btn-ma1').textContent = '3m MA';
-    document.getElementById('btn-ma2').textContent = '6m MA';
-  }
-
-  chartPrices.data.labels   = src.dates;
-  chartPrices.data.datasets = buildPriceDatasets(src);
-  chartPrices.update();
-
-  chartCrack.data.labels   = src.dates;
-  chartCrack.data.datasets = buildCrackDatasets(src);
-  chartCrack.update();
+function updateIntlCharts() {
+  const src = freq==='daily' ? DATA.daily : DATA.monthly;
+  chartIntlPrices.data.labels   = src.dates;
+  chartIntlPrices.data.datasets = buildPriceDatasets(src);
+  chartIntlPrices.update();
+  chartIntlCrack.data.labels   = src.dates;
+  chartIntlCrack.data.datasets = buildCrackDatasets(src);
+  chartIntlCrack.update();
+  document.getElementById('through-intl').textContent = formatThrough(src.dates[src.dates.length-1]);
+  document.getElementById('btn-ma1').textContent = freq==='daily'?'15d MA':'3m MA';
+  document.getElementById('btn-ma2').textContent = freq==='daily'?'30d MA':'6m MA';
 }
 
-function setFreq(f){
+function setView(v) {
+  currentView = v;
+  document.getElementById('wrap-prices').style.display = v==='prices' ? '' : 'none';
+  document.getElementById('wrap-crack').style.display  = v==='crack'  ? '' : 'none';
+  document.getElementById('vbtn-prices').classList.toggle('active', v==='prices');
+  document.getElementById('vbtn-crack').classList.toggle('active',  v==='crack');
+  const titles = { prices:'&#128722; Diesel del Golfo vs. WTI', crack:'&#128200; Crack Spread (Diesel &minus; WTI)' };
+  const descs  = { prices:'Diesel del Golfo EE.UU. (USD/bbl) &mdash; WTI Crudo (USD/bbl)',
+                   crack: 'Diferencial entre el precio del diesel y el WTI (USD/bbl)' };
+  document.getElementById('intl-title').innerHTML = titles[v];
+  document.getElementById('intl-desc').innerHTML  = descs[v];
+}
+
+function setFreq(f) {
   freq = f;
-  document.getElementById('btn-daily').classList.toggle('active', f === 'daily');
-  document.getElementById('btn-monthly').classList.toggle('active', f === 'monthly');
-  updateCharts();
+  document.getElementById('btn-daily').classList.toggle('active', f==='daily');
+  document.getElementById('btn-monthly').classList.toggle('active', f==='monthly');
+  if(DATA) updateIntlCharts();
 }
-
-function setMA(m){
+function setMA(m) {
   maMode = m;
-  document.getElementById('btn-raw').classList.toggle('active', m === 'raw');
-  document.getElementById('btn-ma1').classList.toggle('active', m === 'ma1');
-  document.getElementById('btn-ma2').classList.toggle('active', m === 'ma2');
-  updateCharts();
+  ['raw','ma1','ma2'].forEach(k => document.getElementById('btn-'+k).classList.toggle('active', m===k));
+  if(DATA) updateIntlCharts();
 }
 
-function downloadXLSX() {
-  if (!DATA) return;
-  const d = DATA.daily, m = DATA.monthly;
-
-  // Daily sheet
-  const dailyRows = [['Fecha', 'Diesel (USD/gal)', 'Diesel (USD/bbl)', 'WTI (USD/bbl)', 'Crack Spread 15d (USD/bbl)']];
-  for (let i = 0; i < d.dates.length; i++) {
-    dailyRows.push([d.dates[i], d.diesel_gal[i], d.diesel_bbl[i], d.wti_bbl[i], d.crack[i]]);
-  }
-
-  // Monthly sheet
-  const monthlyRows = [['Mes', 'Diesel prom. (USD/gal)', 'Diesel prom. (USD/bbl)', 'WTI prom. (USD/bbl)', 'Crack Spread prom. (USD/bbl)']];
-  for (let i = 0; i < m.dates.length; i++) {
-    monthlyRows.push([m.dates[i], m.diesel_gal[i], m.diesel_bbl[i], m.wti_bbl[i], m.crack[i]]);
-  }
-
+function downloadAllXLSX() {
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dailyRows),   'Diario');
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(monthlyRows), 'Mensual');
-  XLSX.writeFile(wb, 'Diesel_WTI_' + DATA.updated + '.xlsx');
+
+  // Sheets 1-2: FRED daily & monthly prices
+  if(DATA) {
+    const d=DATA.daily, m=DATA.monthly;
+    const dRows=[['Fecha','Diesel (USD/gal)','Diesel (USD/bbl)','WTI (USD/bbl)','Crack Spread 15d (USD/bbl)']];
+    for(let i=0;i<d.dates.length;i++) dRows.push([d.dates[i],d.diesel_gal[i],d.diesel_bbl[i],d.wti_bbl[i],d.crack[i]]);
+    const mRows=[['Mes','Diesel prom. (USD/gal)','Diesel prom. (USD/bbl)','WTI prom. (USD/bbl)','Crack Spread prom. (USD/bbl)']];
+    for(let i=0;i<m.dates.length;i++) mRows.push([m.dates[i],m.diesel_gal[i],m.diesel_bbl[i],m.wti_bbl[i],m.crack[i]]);
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dRows), 'Diario');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(mRows), 'Mensual');
+  }
+
+  // Sheet 3: Ecuador petroleum sector (monthly)
+  if(typeof PETRO_DATA !== 'undefined') {
+    const P = PETRO_DATA;
+    const headers = ['Fecha',
+      'Diferencial WTI-Ecuador (USD/bbl)','Media 12m Diferencial (USD/bbl)',
+      'Precio Nafta import. (USD/bbl)','Precio Diesel import. (USD/bbl)',
+      'Precio GLP import. (USD/bbl)','Precio Ponderado import. (USD/bbl)',
+      'Exportaciones 12m (kbbl)','Importacion Derivados 12m (kbbl)',
+      'Ratio Exp./Imp. Nafta+Diesel 12m',
+      'Costo Import. Nafta+Diesel 12m (Mill. USD)','Ventas Internas Nafta+Diesel 12m (Mill. USD)',
+      'Subsidio Diesel 12m (Mill. USD)','Subsidio GLP 12m (Mill. USD)',
+      'Subsidio Nafta 12m (Mill. USD)','Balance Neto Comercializacion 12m (Mill. USD)'];
+    const keys = ['differential','diff_12m','nafta_price','diesel_price','glp_price','weighted_price',
+      'exports_12m','imports_12m','ratio','nd_cost_12m','nd_sales_12m',
+      'diesel_sub_12m','glp_sub_12m','nafta_sub_12m','net_comm_12m'];
+    const rows=[headers];
+    for(let i=0;i<P.dates.length;i++){
+      const row=[P.dates[i]]; keys.forEach(k=>row.push(P[k][i])); rows.push(row);
+    }
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols']=[{wch:9},...keys.map(()=>({wch:16}))];
+    XLSX.utils.book_append_sheet(wb, ws, 'Sector Petrolero');
+  }
+
+  const label=(DATA?.updated||PETRO_DATA?.updated||'datos').replace(/\//g,'-');
+  XLSX.writeFile(wb, 'Diesel_WTI_Petroleo_'+label+'.xlsx');
 }
 
 fetch('data.json')
-  .then(r => r.json())
-  .then(d => {
-    DATA = d;
-    document.getElementById('badge-updated').textContent =
-      'Actualizado: ' + d.updated;
-    setThroughBadges(d.daily);
-    initCharts(d.daily);
-  })
-  .catch(e => console.error('Error loading data.json', e));
+  .then(r=>r.json())
+  .then(d=>{ DATA=d; document.getElementById('badge-updated').textContent='Actualizado: '+d.updated; initIntlCharts(d.daily); })
+  .catch(e=>console.warn('data.json not available (file:// protocol?)', e));
+
+
+/* ══════════════════════════════════════════════════════════════
+   ECUADOR PETROLEUM CHARTS (PETRO_DATA embedded via petroleo_data.js)
+   ══════════════════════════════════════════════════════════════ */
+(function() {
+  if(typeof PETRO_DATA === 'undefined') { console.error('PETRO_DATA not loaded'); return; }
+  const P = PETRO_DATA;
+  const L = P.dates;
+  const N = arr => arr.map(v => v === null ? NaN : v);
+
+  const base = {
+    responsive:true, maintainAspectRatio:false, animation:false,
+    plugins:{
+      legend:{ position:'top', labels:{ font:{size:10.5}, usePointStyle:true, padding:12 } },
+      tooltip:{ mode:'index', intersect:false }
+    },
+    scales:{
+      x:{ type:'category', ticks:{ maxTicksLimit:9, font:{size:10}, color:'#888', maxRotation:0 },
+          grid:{ display:false }, afterBuildTicks: buildTicks },
+      y:{ ticks:{ font:{size:10}, color:'#888' }, grid: zeroOnly }
+    }
+  };
+
+  function usdOpts(yLabel) {
+    return { ...base, scales:{ ...base.scales, y:{ ...base.scales.y,
+      ticks:{ ...base.scales.y.ticks, callback: v=>'$'+v.toFixed(0) },
+      title:{ display:true, text:yLabel, font:{size:10}, color:'#aaa' } } } };
+  }
+  function musdOpts() {
+    return { ...base, scales:{ ...base.scales, y:{ ...base.scales.y,
+      ticks:{ ...base.scales.y.ticks, callback: v=>'$'+v.toFixed(0)+'M' },
+      title:{ display:true, text:'Mill. USD', font:{size:10}, color:'#aaa' } } } };
+  }
+  function kbblOpts() {
+    return { ...base, scales:{ ...base.scales, y:{ ...base.scales.y,
+      ticks:{ ...base.scales.y.ticks, callback: v=>v.toLocaleString() },
+      title:{ display:true, text:'Miles de barriles', font:{size:10}, color:'#aaa' } } } };
+  }
+
+  /* C-DIFF: monthly (thin) + 12m rolling avg (bold) */
+  new Chart(document.getElementById('c-diff'),{
+    type:'line', data:{ labels:L, datasets:[
+      { label:'Mensual', data:N(P.differential), borderColor:'#B0BEC5', borderWidth:1, pointRadius:0, tension:0.1, fill:false },
+      { label:'Media 12m', data:N(P.diff_12m), borderColor:'#0a3373', borderWidth:2.2, pointRadius:0, tension:0.3, fill:false },
+    ]}, options: usdOpts('USD/bbl')
+  });
+
+  /* C-RATIO: export/import ratio 12m */
+  new Chart(document.getElementById('c-ratio'),{
+    type:'line', data:{ labels:L, datasets:[
+      { label:'Ratio exp./imp. (12m)', data:N(P.ratio), borderColor:'#0a3373', borderWidth:2, pointRadius:0, tension:0.2, fill:false }
+    ]}, options:{ ...base, scales:{ ...base.scales, y:{ ...base.scales.y,
+      min: 0,
+      ticks:{ ...base.scales.y.ticks, callback: v=>v.toFixed(1)+'x' },
+      title:{ display:true, text:'Ratio', font:{size:10}, color:'#aaa' } } } }
+  });
+
+  /* C-VOLS: 12m exports vs imports */
+  new Chart(document.getElementById('c-vols'),{
+    type:'line', data:{ labels:L, datasets:[
+      { label:'Exportaciones (petróleo + derivados)', data:N(P.exports_12m), borderColor:'#0a3373', borderWidth:2, pointRadius:0, tension:0.2, fill:false },
+      { label:'Importación derivados',                data:N(P.imports_12m), borderColor:'#c0392b', borderWidth:2, pointRadius:0, tension:0.2, fill:false },
+    ]}, options: kbblOpts()
+  });
+
+  /* C-PRICES: derivative import prices */
+  new Chart(document.getElementById('c-prices'),{
+    type:'line', data:{ labels:L, datasets:[
+      { label:'Diésel',              data:N(P.diesel_price),    borderColor:'#c0392b', borderWidth:1.8, pointRadius:0, tension:0.2, fill:false },
+      { label:'Nafta',               data:N(P.nafta_price),     borderColor:'#27ae60', borderWidth:1.8, pointRadius:0, tension:0.2, fill:false },
+      { label:'GLP',                 data:N(P.glp_price),       borderColor:'#6A1B9A', borderWidth:1.8, pointRadius:0, tension:0.2, fill:false },
+      { label:'Precio ponderado',    data:N(P.weighted_price),  borderColor:'#1A1A2E', borderWidth:2.2, pointRadius:0, tension:0.2, fill:false, borderDash:[6,3] },
+    ]}, options: usdOpts('USD/bbl')
+  });
+
+  /* C-COSTSALES: cost vs sales (Nafta+Diesel 12m) with shaded gap */
+  new Chart(document.getElementById('c-costsales'),{
+    type:'line', data:{ labels:L, datasets:[
+      { label:'Costo importación', data:N(P.nd_cost_12m),  borderColor:'#c0392b', borderWidth:2, pointRadius:0, tension:0.2, fill:false },
+      { label:'Ventas internas',   data:N(P.nd_sales_12m), borderColor:'#0a3373', borderWidth:2, pointRadius:0, tension:0.2,
+        fill:'-1', backgroundColor:'rgba(192,57,43,0.10)' },
+    ]}, options: musdOpts()
+  });
+
+  /* C-NET: net balance bar with sign coloring */
+  const netColors = P.net_comm_12m.map(v => v===null ? 'transparent' : v>=0 ? 'rgba(46,125,50,0.75)' : 'rgba(192,57,43,0.75)');
+  new Chart(document.getElementById('c-net'),{
+    type:'bar', data:{ labels:L, datasets:[
+      { label:'Balance neto (12m)', data:N(P.net_comm_12m), backgroundColor:netColors, borderWidth:0 }
+    ]},
+    options:{ ...musdOpts(),
+      plugins:{ ...base.plugins, legend:{ display:false } },
+      scales:{ ...musdOpts().scales, y:{ ...musdOpts().scales.y,
+        ticks:{ ...musdOpts().scales.y.ticks },
+        grid: zeroOnly
+      }}
+    }
+  });
+})();
+
 </script>
 </body>
 </html>
