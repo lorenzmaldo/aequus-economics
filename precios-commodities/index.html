@@ -92,9 +92,11 @@ footer{text-align:center;padding:28px 16px;background:#f2f2f2;font-size:.76rem;c
 <div class="dash-grid">
 
   <!-- ─── SECTION: International ─────────────────────────────── -->
-  <div class="section-hdr">
-    <h3>Precios Internacionales</h3>
-    <p>Fuente: FRED &mdash; DDFUELUSGULF, DCOILWTICO</p>
+  <div class="section-hdr" style="display:flex;justify-content:space-between;align-items:flex-end">
+    <div>
+      <h3>Precios Internacionales</h3>
+      <p>Fuente: FRED &mdash; DDFUELUSGULF, DCOILWTICO</p>
+    </div>
   </div>
 
   <!-- Row 1 Left: International prices with toggle -->
@@ -139,9 +141,12 @@ footer{text-align:center;padding:28px 16px;background:#f2f2f2;font-size:.76rem;c
   </div>
 
   <!-- ─── SECTION: Volumes ────────────────────────────────────── -->
-  <div class="section-hdr">
-    <h3>Vol&uacute;menes &mdash; Sector Petrolero Ecuador</h3>
-    <p>Fuente: BCE &mdash; EP Petroecuador &nbsp;|&nbsp; Mensual &nbsp;|&nbsp; Suma m&oacute;vil 12 meses</p>
+  <div class="section-hdr" style="display:flex;justify-content:space-between;align-items:flex-end">
+    <div>
+      <h3>Vol&uacute;menes &mdash; Sector Petrolero Ecuador</h3>
+      <p>Fuente: BCE &mdash; EP Petroecuador &nbsp;|&nbsp; Mensual &nbsp;|&nbsp; Suma m&oacute;vil 12 meses</p>
+    </div>
+    <button class="dl-btn" onclick="downloadPetroXLSX()" style="margin-bottom:2px">&#11015; Descargar XLSX</button>
   </div>
 
   <!-- Row 2 Left: Export/import ratio -->
@@ -450,6 +455,48 @@ fetch('data.json')
     }
   });
 })();
+
+/* ── Petroleum XLSX download ── */
+function downloadPetroXLSX() {
+  const P = PETRO_DATA;
+  const headers = [
+    'Fecha',
+    'Diferencial WTI-Ecuador (USD/bbl)',
+    'Media 12m Diferencial (USD/bbl)',
+    'Precio Nafta import. (USD/bbl)',
+    'Precio Diesel import. (USD/bbl)',
+    'Precio GLP import. (USD/bbl)',
+    'Precio Ponderado import. (USD/bbl)',
+    'Exportaciones 12m (kbbl)',
+    'Importacion Derivados 12m (kbbl)',
+    'Ratio Exp./Imp. Nafta+Diesel 12m',
+    'Costo Import. Nafta+Diesel 12m (Mill. USD)',
+    'Ventas Internas Nafta+Diesel 12m (Mill. USD)',
+    'Subsidio Diesel 12m (Mill. USD)',
+    'Subsidio GLP 12m (Mill. USD)',
+    'Subsidio Nafta 12m (Mill. USD)',
+    'Balance Neto Comercializacion 12m (Mill. USD)',
+  ];
+  const keys = [
+    'differential', 'diff_12m',
+    'nafta_price', 'diesel_price', 'glp_price', 'weighted_price',
+    'exports_12m', 'imports_12m', 'ratio',
+    'nd_cost_12m', 'nd_sales_12m',
+    'diesel_sub_12m', 'glp_sub_12m', 'nafta_sub_12m',
+    'net_comm_12m',
+  ];
+  const rows = [headers];
+  for (let i = 0; i < P.dates.length; i++) {
+    const row = [P.dates[i]];
+    keys.forEach(k => row.push(P[k][i]));
+    rows.push(row);
+  }
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{ wch: 9 }, ...keys.map(() => ({ wch: 16 }))];
+  XLSX.utils.book_append_sheet(wb, ws, 'Sector Petrolero');
+  XLSX.writeFile(wb, 'Petroleo_Ecuador_' + P.updated + '.xlsx');
+}
 </script>
 </body>
 </html>
