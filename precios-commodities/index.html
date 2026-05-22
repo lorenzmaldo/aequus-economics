@@ -73,6 +73,7 @@ footer{text-align:center;padding:28px 16px;background:#f2f2f2;font-size:.76rem;c
 <header>
   <div class="header-nav">
     <a href="../index.html" class="ae-nav-home">&#8592; Menu</a>
+    <button class="ae-nav-home" onclick="downloadAllXLSX()" style="cursor:pointer;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.15);color:#fff">&#11015; Descargar XLSX</button>
     <div class="ae-nav-dd-wrap">
       <button class="ae-nav-dd-btn" onclick="aeToggleNav(this)">Dashboards &#9660;</button>
       <div class="ae-nav-dd">
@@ -132,7 +133,6 @@ footer{text-align:center;padding:28px 16px;background:#f2f2f2;font-size:.76rem;c
         <button id="btn-ma1"               onclick="setMA('ma1')">15d MA</button>
         <button id="btn-ma2"               onclick="setMA('ma2')">30d MA</button>
       </div>
-      <button class="dl-btn" onclick="downloadXLSX()">&#11015; XLSX</button>
     </div>
     <div class="chart-wrap" id="wrap-prices"><canvas id="chart-prices"></canvas></div>
     <div class="chart-wrap" id="wrap-crack" style="display:none"><canvas id="chart-crack"></canvas></div>
@@ -154,7 +154,6 @@ footer{text-align:center;padding:28px 16px;background:#f2f2f2;font-size:.76rem;c
       <h3>Vol&uacute;menes &mdash; Sector Petrolero Ecuador</h3>
       <p>Fuente: BCE &mdash; EP Petroecuador &nbsp;|&nbsp; Mensual &nbsp;|&nbsp; Suma m&oacute;vil 12 meses</p>
     </div>
-    <button class="dl-btn" onclick="downloadPetroXLSX()" style="margin-bottom:2px">&#11015; Descargar XLSX</button>
   </div>
 
   <!-- Row 2 Left: Export/import ratio -->
@@ -346,17 +345,46 @@ function setMA(m) {
   if(DATA) updateIntlCharts();
 }
 
-function downloadXLSX() {
-  if(!DATA) return;
-  const d=DATA.daily, m=DATA.monthly;
-  const dRows=[['Fecha','Diesel (USD/gal)','Diesel (USD/bbl)','WTI (USD/bbl)','Crack Spread 15d (USD/bbl)']];
-  for(let i=0;i<d.dates.length;i++) dRows.push([d.dates[i],d.diesel_gal[i],d.diesel_bbl[i],d.wti_bbl[i],d.crack[i]]);
-  const mRows=[['Mes','Diesel prom. (USD/gal)','Diesel prom. (USD/bbl)','WTI prom. (USD/bbl)','Crack Spread prom.']];
-  for(let i=0;i<m.dates.length;i++) mRows.push([m.dates[i],m.diesel_gal[i],m.diesel_bbl[i],m.wti_bbl[i],m.crack[i]]);
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(dRows),'Diario');
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(mRows),'Mensual');
-  XLSX.writeFile(wb,'Diesel_WTI_'+DATA.updated+'.xlsx');
+function downloadAllXLSX() {
+  const wb = XLSX.utils.book_new();
+
+  // Sheets 1-2: FRED daily & monthly prices
+  if(DATA) {
+    const d=DATA.daily, m=DATA.monthly;
+    const dRows=[['Fecha','Diesel (USD/gal)','Diesel (USD/bbl)','WTI (USD/bbl)','Crack Spread 15d (USD/bbl)']];
+    for(let i=0;i<d.dates.length;i++) dRows.push([d.dates[i],d.diesel_gal[i],d.diesel_bbl[i],d.wti_bbl[i],d.crack[i]]);
+    const mRows=[['Mes','Diesel prom. (USD/gal)','Diesel prom. (USD/bbl)','WTI prom. (USD/bbl)','Crack Spread prom. (USD/bbl)']];
+    for(let i=0;i<m.dates.length;i++) mRows.push([m.dates[i],m.diesel_gal[i],m.diesel_bbl[i],m.wti_bbl[i],m.crack[i]]);
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dRows), 'Diario');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(mRows), 'Mensual');
+  }
+
+  // Sheet 3: Ecuador petroleum sector (monthly)
+  if(typeof PETRO_DATA !== 'undefined') {
+    const P = PETRO_DATA;
+    const headers = ['Fecha',
+      'Diferencial WTI-Ecuador (USD/bbl)','Media 12m Diferencial (USD/bbl)',
+      'Precio Nafta import. (USD/bbl)','Precio Diesel import. (USD/bbl)',
+      'Precio GLP import. (USD/bbl)','Precio Ponderado import. (USD/bbl)',
+      'Exportaciones 12m (kbbl)','Importacion Derivados 12m (kbbl)',
+      'Ratio Exp./Imp. Nafta+Diesel 12m',
+      'Costo Import. Nafta+Diesel 12m (Mill. USD)','Ventas Internas Nafta+Diesel 12m (Mill. USD)',
+      'Subsidio Diesel 12m (Mill. USD)','Subsidio GLP 12m (Mill. USD)',
+      'Subsidio Nafta 12m (Mill. USD)','Balance Neto Comercializacion 12m (Mill. USD)'];
+    const keys = ['differential','diff_12m','nafta_price','diesel_price','glp_price','weighted_price',
+      'exports_12m','imports_12m','ratio','nd_cost_12m','nd_sales_12m',
+      'diesel_sub_12m','glp_sub_12m','nafta_sub_12m','net_comm_12m'];
+    const rows=[headers];
+    for(let i=0;i<P.dates.length;i++){
+      const row=[P.dates[i]]; keys.forEach(k=>row.push(P[k][i])); rows.push(row);
+    }
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols']=[{wch:9},...keys.map(()=>({wch:16}))];
+    XLSX.utils.book_append_sheet(wb, ws, 'Sector Petrolero');
+  }
+
+  const label=(DATA?.updated||PETRO_DATA?.updated||'datos').replace(/\//g,'-');
+  XLSX.writeFile(wb, 'Diesel_WTI_Petroleo_'+label+'.xlsx');
 }
 
 fetch('data.json')
@@ -464,47 +492,6 @@ fetch('data.json')
   });
 })();
 
-/* ── Petroleum XLSX download ── */
-function downloadPetroXLSX() {
-  const P = PETRO_DATA;
-  const headers = [
-    'Fecha',
-    'Diferencial WTI-Ecuador (USD/bbl)',
-    'Media 12m Diferencial (USD/bbl)',
-    'Precio Nafta import. (USD/bbl)',
-    'Precio Diesel import. (USD/bbl)',
-    'Precio GLP import. (USD/bbl)',
-    'Precio Ponderado import. (USD/bbl)',
-    'Exportaciones 12m (kbbl)',
-    'Importacion Derivados 12m (kbbl)',
-    'Ratio Exp./Imp. Nafta+Diesel 12m',
-    'Costo Import. Nafta+Diesel 12m (Mill. USD)',
-    'Ventas Internas Nafta+Diesel 12m (Mill. USD)',
-    'Subsidio Diesel 12m (Mill. USD)',
-    'Subsidio GLP 12m (Mill. USD)',
-    'Subsidio Nafta 12m (Mill. USD)',
-    'Balance Neto Comercializacion 12m (Mill. USD)',
-  ];
-  const keys = [
-    'differential', 'diff_12m',
-    'nafta_price', 'diesel_price', 'glp_price', 'weighted_price',
-    'exports_12m', 'imports_12m', 'ratio',
-    'nd_cost_12m', 'nd_sales_12m',
-    'diesel_sub_12m', 'glp_sub_12m', 'nafta_sub_12m',
-    'net_comm_12m',
-  ];
-  const rows = [headers];
-  for (let i = 0; i < P.dates.length; i++) {
-    const row = [P.dates[i]];
-    keys.forEach(k => row.push(P[k][i]));
-    rows.push(row);
-  }
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [{ wch: 9 }, ...keys.map(() => ({ wch: 16 }))];
-  XLSX.utils.book_append_sheet(wb, ws, 'Sector Petrolero');
-  XLSX.writeFile(wb, 'Petroleo_Ecuador_' + P.updated + '.xlsx');
-}
 </script>
 </body>
 </html>
