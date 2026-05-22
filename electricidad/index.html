@@ -42,14 +42,25 @@
     width:100%;flex:1;border:none;display:block;
   }
 
-  /* Heatmaps tab — side by side */
+  /* Heatmaps tab */
   #panel-heatmaps{
-    flex-direction:row !important;
+    flex-direction:column !important;
     overflow:hidden;
-    padding:20px;
-    gap:16px;
-    align-items:stretch;
+    gap:0;
   }
+  .hmap-row{
+    display:flex;flex-direction:row;
+    flex:1;overflow:hidden;
+    padding:10px 20px 16px;
+    gap:16px;align-items:stretch;
+  }
+  .country-btn{
+    padding:4px 18px;border-radius:20px;border:1px solid #DDD;
+    font-size:12px;font-weight:400;cursor:pointer;
+    background:#F5F5F5;color:#555;transition:background .15s;
+  }
+  .country-btn:hover{background:#E5E5E5}
+  .country-btn.active{background:#B71C1C;border-color:#B71C1C;color:#fff}
   .hmap-card{
     background:#fff;border:1px solid #E5E5E5;border-radius:12px;
     overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06);
@@ -157,33 +168,66 @@
 <!-- ── Panel 3: Heatmaps ── -->
 <div class="tab-panel" id="panel-heatmaps">
 
-  <!-- El Niño heatmap -->
-  <div class="hmap-card">
-    <div class="hmap-header">
-      <span class="hmap-badge badge-en">El Niño</span>
-      <div>
-        <div class="hmap-title">Rainfall Change During El Niño Events vs. 2023  |  Ecuador Hydro Plants ≥ 50 MW</div>
-        <div class="hmap-sub">24 events · 1951–2024 · Click to enlarge</div>
+  <!-- Country selector -->
+  <div style="display:flex;align-items:center;gap:10px;padding:10px 20px 0;flex-shrink:0">
+    <span style="font-size:11px;font-weight:400;color:#555">Country:</span>
+    <button class="country-btn active" data-country="ecuador">Ecuador</button>
+    <button class="country-btn" data-country="colombia">Colombia</button>
+  </div>
+
+  <!-- Ecuador heatmaps -->
+  <div id="hmap-ecuador" class="hmap-row">
+    <div class="hmap-card">
+      <div class="hmap-header">
+        <span class="hmap-badge badge-en">El Ni&#241;o</span>
+        <div>
+          <div class="hmap-title">Rainfall Change During El Ni&#241;o Events vs. 2023  |  Ecuador Hydro Plants &#8805; 50 MW</div>
+          <div class="hmap-sub">24 events · 1951–2024 · WorldClim CRU-TS 4.09 at plant coordinates · Click to enlarge</div>
+        </div>
+      </div>
+      <div class="hmap-img-wrap">
+        <img class="hmap-img" src="figures/heatmap_elnino_vs_2023.png" alt="Ecuador El Nino heatmap" title="Click to enlarge"/>
       </div>
     </div>
-    <div class="hmap-img-wrap">
-      <img class="hmap-img" src="figures/heatmap_elnino_vs_2023.png"
-           alt="El Nino heatmap" title="Click to enlarge"/>
+    <div class="hmap-card">
+      <div class="hmap-header">
+        <span class="hmap-badge badge-ln">La Ni&#241;a</span>
+        <div>
+          <div class="hmap-title">Rainfall Change During La Ni&#241;a Events vs. 2023  |  Ecuador Hydro Plants &#8805; 50 MW</div>
+          <div class="hmap-sub">18 events · 1951–2023 · WorldClim CRU-TS 4.09 at plant coordinates · Click to enlarge</div>
+        </div>
+      </div>
+      <div class="hmap-img-wrap">
+        <img class="hmap-img" src="figures/heatmap_lanina_vs_2023.png" alt="Ecuador La Nina heatmap" title="Click to enlarge"/>
+      </div>
     </div>
   </div>
 
-  <!-- La Niña heatmap -->
-  <div class="hmap-card">
-    <div class="hmap-header">
-      <span class="hmap-badge badge-ln">La Niña</span>
-      <div>
-        <div class="hmap-title">Rainfall Change During La Niña Events vs. 2023  |  Ecuador Hydro Plants ≥ 50 MW</div>
-        <div class="hmap-sub">18 events · 1951–2023 · Click to enlarge</div>
+  <!-- Colombia heatmaps (hidden by default) -->
+  <div id="hmap-colombia" class="hmap-row" style="display:none">
+    <div class="hmap-card">
+      <div class="hmap-header">
+        <span class="hmap-badge badge-en">El Ni&#241;o</span>
+        <div>
+          <div class="hmap-title">Rainfall Change During El Ni&#241;o Events vs. 2023  |  Colombia Hydro Plants &#8805; 50 MW</div>
+          <div class="hmap-sub">24 events · 1951–2024 · WorldClim CRU-TS 4.09 at plant coordinates · UPME 2025 · Click to enlarge</div>
+        </div>
+      </div>
+      <div class="hmap-img-wrap">
+        <img class="hmap-img" src="figures/heatmap_colombia_elnino_vs_2023.png" alt="Colombia El Nino heatmap" title="Click to enlarge"/>
       </div>
     </div>
-    <div class="hmap-img-wrap">
-      <img class="hmap-img" src="figures/heatmap_lanina_vs_2023.png"
-           alt="La Nina heatmap" title="Click to enlarge"/>
+    <div class="hmap-card">
+      <div class="hmap-header">
+        <span class="hmap-badge badge-ln">La Ni&#241;a</span>
+        <div>
+          <div class="hmap-title">Rainfall Change During La Ni&#241;a Events vs. 2023  |  Colombia Hydro Plants &#8805; 50 MW</div>
+          <div class="hmap-sub">18 events · 1951–2023 · WorldClim CRU-TS 4.09 at plant coordinates · UPME 2025 · Click to enlarge</div>
+        </div>
+      </div>
+      <div class="hmap-img-wrap">
+        <img class="hmap-img" src="figures/heatmap_colombia_lanina_vs_2023.png" alt="Colombia La Nina heatmap" title="Click to enlarge"/>
+      </div>
     </div>
   </div>
 
@@ -234,6 +278,17 @@
   }
   window.addEventListener('resize', setFrameHeight);
   setFrameHeight();
+
+  // ── Country toggle ─────────────────────────────────────────────────────────
+  document.querySelectorAll('.country-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.country-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const c = btn.dataset.country;
+      document.getElementById('hmap-ecuador').style.display  = c==='ecuador'  ? 'flex' : 'none';
+      document.getElementById('hmap-colombia').style.display = c==='colombia' ? 'flex' : 'none';
+    });
+  });
 
   // ── Lightbox ───────────────────────────────────────────────────────────────
   const lb    = document.getElementById('lightbox');
