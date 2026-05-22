@@ -92,7 +92,7 @@ footer{text-align:center;padding:28px 16px;background:#f2f2f2;font-size:.76rem;c
 <div class="dash-grid">
 
   <!-- ─── SECTION: International ─────────────────────────────── -->
-  <div class="section-hdr" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center">
+  <div class="section-hdr" style="display:grid;grid-template-columns:1fr 1fr auto;gap:20px;align-items:center">
     <div>
       <a href="scenario.html" style="display:inline-flex;align-items:center;gap:8px;
          background:#0a3373;color:#fff;padding:9px 18px;border-radius:8px;
@@ -104,6 +104,9 @@ footer{text-align:center;padding:28px 16px;background:#f2f2f2;font-size:.76rem;c
     <div>
       <h3>Precios Internacionales</h3>
       <p>Fuente: FRED &mdash; DDFUELUSGULF, DCOILWTICO</p>
+    </div>
+    <div>
+      <button class="dl-btn" onclick="downloadAllXLSX()">&#11015; Descargar XLSX</button>
     </div>
   </div>
 
@@ -141,10 +144,7 @@ footer{text-align:center;padding:28px 16px;background:#f2f2f2;font-size:.76rem;c
   <div class="chart-card">
     <div class="chart-card-hdr">
       <h2>&#128200; Diferencial crudo ecuatoriano vs. WTI</h2>
-      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
-        <span class="through-badge">Mar-2026</span>
-        <button class="dl-btn" onclick="downloadAllXLSX()">&#11015; Descargar XLSX</button>
-      </div>
+      <span class="through-badge">Mar-2026</span>
     </div>
     <p>WTI menos precio de exportaci&oacute;n EP (USD/bbl) &mdash; valor positivo = Ecuador exporta con descuento al WTI &mdash; l&iacute;nea oscura: media m&oacute;vil 12 meses</p>
     <div class="chart-wrap"><canvas id="c-diff"></canvas></div>
