@@ -73,7 +73,6 @@ footer{text-align:center;padding:28px 16px;background:#f2f2f2;font-size:.76rem;c
 <header>
   <div class="header-nav">
     <a href="../index.html" class="ae-nav-home">&#8592; Menu</a>
-    <button class="ae-nav-home" onclick="downloadAllXLSX()" style="cursor:pointer;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.15);color:#fff">&#11015; Descargar XLSX</button>
     <div class="ae-nav-dd-wrap">
       <button class="ae-nav-dd-btn" onclick="aeToggleNav(this)">Dashboards &#9660;</button>
       <div class="ae-nav-dd">
@@ -142,7 +141,10 @@ footer{text-align:center;padding:28px 16px;background:#f2f2f2;font-size:.76rem;c
   <div class="chart-card">
     <div class="chart-card-hdr">
       <h2>&#128200; Diferencial crudo ecuatoriano vs. WTI</h2>
-      <span class="through-badge">Mar-2026</span>
+      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+        <span class="through-badge">Mar-2026</span>
+        <button class="dl-btn" onclick="downloadAllXLSX()">&#11015; Descargar XLSX</button>
+      </div>
     </div>
     <p>WTI menos precio de exportaci&oacute;n EP (USD/bbl) &mdash; valor positivo = Ecuador exporta con descuento al WTI &mdash; l&iacute;nea oscura: media m&oacute;vil 12 meses</p>
     <div class="chart-wrap"><canvas id="c-diff"></canvas></div>
