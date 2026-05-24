@@ -103,6 +103,24 @@
     font-weight:300;opacity:.8;
   }
   #lb-close:hover{opacity:1}
+
+  /* ── Heatmap reference toggle ── */
+  .ref-btn{
+    padding:3px 11px;border:none;background:transparent;
+    font-size:10.5px;font-weight:400;color:#777;cursor:pointer;
+    transition:background .15s,color .15s;white-space:nowrap;
+  }
+  .ref-btn:hover{background:#EBEBEB;color:#333}
+  .ref-btn.ref-active{background:#B71C1C;color:#fff;font-weight:500}
+  .ref-btn-ln{
+    padding:3px 11px;border:none;background:transparent;
+    font-size:10.5px;font-weight:400;color:#777;cursor:pointer;
+    transition:background .15s,color .15s;white-space:nowrap;
+  }
+  .ref-btn-ln:hover{background:#EBEBEB;color:#333}
+  .ref-btn-ln.ref-ln-active{background:#1565C0;color:#fff;font-weight:500}
+
+  /* ── Aequus nav ── */
   .ae-nav-home{padding:3px 11px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#0f2040;background:#F5F5F5;text-decoration:none;white-space:nowrap;transition:background .12s}
   .ae-nav-home:hover{background:#E0E0E0}
   .ae-nav-dd-wrap{position:relative}
@@ -113,6 +131,7 @@
   .ae-nav-dd a{display:block;padding:9px 16px;font-size:12px;color:#1a2332;text-decoration:none;transition:background .1s}
   .ae-nav-dd a:hover{background:#f0f4fa}
   .ae-nav-dd a.ae-current{font-weight:700;color:#0f2040;background:#e8edf4}
+
 </style>
 </head>
 <body>
@@ -120,7 +139,7 @@
 <!-- ── Navigation ── -->
 <nav id="navbar">
   <a href="../index.html" class="ae-nav-home">&#8592; Menu</a>
-  <div class="ae-nav-dd-wrap">
+  <div class="ae-nav-dd-wrap" style="margin-right:16px">
     <button class="ae-nav-dd-btn" onclick="aeToggleNav(this)">Dashboards &#9660;</button>
     <div class="ae-nav-dd">
       <a href="../homicidios/index.html">&#128506;&#xFE0F; Homicidios Ecuador</a>
@@ -129,7 +148,6 @@
       <a href="../precios-commodities/index.html">&#128722; Diesel y WTI</a>
     </div>
   </div>
-  <div style="width:1px;height:20px;background:#E0E0E0;flex-shrink:0"></div>
   <div class="brand">
     <div class="brand-dot"></div>
     <div>
@@ -178,27 +196,57 @@
   <!-- Ecuador heatmaps -->
   <div id="hmap-ecuador" class="hmap-row">
     <div class="hmap-card">
-      <div class="hmap-header">
-        <span class="hmap-badge badge-en">El Ni&#241;o</span>
-        <div>
-          <div class="hmap-title">Rainfall Change During El Ni&#241;o Events vs. 2023  |  Ecuador Hydro Plants &#8805; 50 MW</div>
-          <div class="hmap-sub">24 events · 1951–2024 · WorldClim CRU-TS 4.09 at plant coordinates · Click to enlarge</div>
+      <div class="hmap-header" style="flex-direction:column;align-items:flex-start;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;width:100%;">
+          <span class="hmap-badge badge-en">El Ni&#241;o</span>
+          <div>
+            <div class="hmap-title">Rainfall Change During El Ni&#241;o Events  |  Ecuador Hydro Plants &#8805; 50 MW</div>
+            <div class="hmap-sub">24 events · 1951–2024 · WorldClim CRU-TS 4.09 at plant coordinates · Click to enlarge</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:10px;font-weight:500;color:#777;">Reference:</span>
+          <div style="display:flex;background:#F5F5F5;border:1px solid #E0E0E0;border-radius:16px;overflow:hidden;">
+            <button class="ref-btn ref-active" data-ref="2023"    onclick="setHmapRef(this)">vs 2023 (crisis)</button>
+            <button class="ref-btn"            data-ref="2019"    onclick="setHmapRef(this)">vs 2019 (wet year)</button>
+            <button class="ref-btn"            data-ref="avg1823" onclick="setHmapRef(this)">vs 2018–2023 avg</button>
+            <button class="ref-btn"            data-ref="full"    onclick="setHmapRef(this)">vs full sample avg</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;width:100%;align-items:stretch;">
+          <div id="hmap-ref-note" style="font-size:10px;color:#666;background:#FAFAFA;border:1px solid #EBEBEB;border-radius:6px;padding:5px 10px;line-height:1.55;flex:1;"></div>
+          <div id="hmap-ref-stat" style="font-size:10px;color:#444;background:#FAFAFA;border:1px solid #EBEBEB;border-radius:6px;padding:5px 12px;line-height:1.55;white-space:nowrap;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:1px;flex-shrink:0;"></div>
         </div>
       </div>
       <div class="hmap-img-wrap">
-        <img class="hmap-img" src="figures/heatmap_elnino_vs_2023.png" alt="Ecuador El Nino heatmap" title="Click to enlarge"/>
+        <img class="hmap-img" id="elnino-hmap-img" src="figures/heatmap_elnino_vs_2023.png" alt="Ecuador El Nino heatmap" title="Click to enlarge"/>
       </div>
     </div>
     <div class="hmap-card">
-      <div class="hmap-header">
-        <span class="hmap-badge badge-ln">La Ni&#241;a</span>
-        <div>
-          <div class="hmap-title">Rainfall Change During La Ni&#241;a Events vs. 2023  |  Ecuador Hydro Plants &#8805; 50 MW</div>
-          <div class="hmap-sub">18 events · 1951–2023 · WorldClim CRU-TS 4.09 at plant coordinates · Click to enlarge</div>
+      <div class="hmap-header" style="flex-direction:column;align-items:flex-start;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;width:100%;">
+          <span class="hmap-badge badge-ln">La Ni&#241;a</span>
+          <div>
+            <div class="hmap-title">Rainfall Change During La Ni&#241;a Events  |  Ecuador Hydro Plants &#8805; 50 MW</div>
+            <div class="hmap-sub">18 events · 1951–2024 · WorldClim CRU-TS 4.09 at plant coordinates · Click to enlarge</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:10px;font-weight:500;color:#777;">Reference:</span>
+          <div style="display:flex;background:#F5F5F5;border:1px solid #E0E0E0;border-radius:16px;overflow:hidden;">
+            <button class="ref-btn-ln ref-ln-active" data-ref="2023"    onclick="setLninaRef(this)">vs 2023 (crisis)</button>
+            <button class="ref-btn-ln"               data-ref="2019"    onclick="setLninaRef(this)">vs 2019 (wet year)</button>
+            <button class="ref-btn-ln"               data-ref="avg1823" onclick="setLninaRef(this)">vs 2018–2023 avg</button>
+            <button class="ref-btn-ln"               data-ref="full"    onclick="setLninaRef(this)">vs full sample avg</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;width:100%;align-items:stretch;">
+          <div id="lnina-ref-note" style="font-size:10px;color:#666;background:#FAFAFA;border:1px solid #EBEBEB;border-radius:6px;padding:5px 10px;line-height:1.55;flex:1;"></div>
+          <div id="lnina-ref-stat" style="font-size:10px;color:#444;background:#FAFAFA;border:1px solid #EBEBEB;border-radius:6px;padding:5px 12px;line-height:1.55;white-space:nowrap;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:1px;flex-shrink:0;"></div>
         </div>
       </div>
       <div class="hmap-img-wrap">
-        <img class="hmap-img" src="figures/heatmap_lanina_vs_2023.png" alt="Ecuador La Nina heatmap" title="Click to enlarge"/>
+        <img class="hmap-img" id="lanina-hmap-img" src="figures/heatmap_lanina_vs_2023.png" alt="Ecuador La Nina heatmap" title="Click to enlarge"/>
       </div>
     </div>
   </div>
@@ -304,7 +352,72 @@
   document.getElementById('lb-close').addEventListener('click', () => lb.classList.remove('open'));
   lb.addEventListener('click', e => { if (e.target === lb) lb.classList.remove('open'); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('open'); });
+
+  // ── Heatmap reference toggle ───────────────────────────────────────────────
+  const HMAP_NOTES = {
+    "2023":    "<strong>vs 2023 — Crisis year.</strong> Year Ecuador's electricity supply could not meet demand. Green = more rainfall than the crisis threshold; red = would have been an even worse shortfall.",
+    "2019":    "<strong>vs 2019 — Wet year.</strong> Wettest recent year in WorldClim (Paute flows +61–71% above 2023). Closest proxy for 2025 record hydro conditions. Green = wetter than good operating conditions.",
+    "avg1823": "<strong>vs 2018–2023 avg — Modern complex baseline.</strong> Full operating period of the modern hydro complex (Sopladora ~2018, MSF 2019). Most representative normal operating reference.",
+    "full":    "<strong>vs full sample avg (1951–2024) — Climatological mean.</strong> Average across the entire WorldClim record. Shows each El Niño event vs. the long-run historical norm.",
+  };
+
+  const HMAP_STATS = {
+    "2023":    { pct: 54.2, n: 13, of: 24, label: "vs 2023 crisis level" },
+    "2019":    { pct: 25.0, n:  6, of: 24, label: "vs 2019 wet-year level" },
+    "avg1823": { pct: 45.8, n: 11, of: 24, label: "vs 2018–2023 average" },
+    "full":    { pct: 45.8, n: 11, of: 24, label: "vs full sample average" },
+  };
+
+  function setHmapRef(btn) {
+    document.querySelectorAll('.ref-btn').forEach(b => b.classList.remove('ref-active'));
+    btn.classList.add('ref-active');
+    const ref = btn.dataset.ref;
+    document.getElementById('elnino-hmap-img').src = `figures/heatmap_elnino_vs_${ref}.png`;
+    document.getElementById('hmap-ref-note').innerHTML = HMAP_NOTES[ref];
+    const s = HMAP_STATS[ref];
+    const col = s.pct >= 50 ? '#2E7D32' : '#B71C1C';
+    document.getElementById('hmap-ref-stat').innerHTML =
+      `<span style="font-size:18px;font-weight:700;color:${col};">${s.pct.toFixed(1)}%</span>` +
+      `<span style="font-size:9px;color:#888;">MW-weighted episodes above<br>${s.label}</span>` +
+      `<span style="font-size:9px;color:#aaa;">(${s.n} of ${s.of} events)</span>`;
+  }
+
+  setHmapRef(document.querySelector('.ref-btn.ref-active'));
+
+  // ── La Niña reference toggle ───────────────────────────────────────────────
+  const LNINA_NOTES = {
+    "2023":    "<strong>vs 2023 — Crisis year.</strong> Year Ecuador's electricity supply could not meet demand. Green = more rainfall than the crisis threshold; red = would have been an even worse shortfall.",
+    "2019":    "<strong>vs 2019 — Wet year.</strong> Wettest recent year in WorldClim (Paute flows +61–71% above 2023). Closest proxy for 2025 record hydro conditions. Green = wetter than good operating conditions.",
+    "avg1823": "<strong>vs 2018–2023 avg — Modern complex baseline.</strong> Full operating period of the modern hydro complex (Sopladora ~2018, MSF 2019). Most representative normal operating reference.",
+    "full":    "<strong>vs full sample avg (1951–2024) — Climatological mean.</strong> Average across the entire WorldClim record. Shows each La Niña event vs. the long-run historical norm.",
+  };
+
+  const LNINA_STATS = {
+    "2023":    { pct: 52.9, n:  9, of: 17, label: "vs 2023 crisis level" },
+    "2019":    { pct:  5.9, n:  1, of: 17, label: "vs 2019 wet-year level" },
+    "avg1823": { pct: 47.1, n:  8, of: 17, label: "vs 2018–2023 average" },
+    "full":    { pct: 35.3, n:  6, of: 17, label: "vs full sample average" },
+  };
+
+  function setLninaRef(btn) {
+    document.querySelectorAll('.ref-btn-ln').forEach(b => b.classList.remove('ref-ln-active'));
+    btn.classList.add('ref-ln-active');
+    const ref = btn.dataset.ref;
+    document.getElementById('lanina-hmap-img').src = `figures/heatmap_lanina_vs_${ref}.png`;
+    document.getElementById('lnina-ref-note').innerHTML = LNINA_NOTES[ref];
+    const s = LNINA_STATS[ref];
+    const col = s.pct >= 50 ? '#2E7D32' : '#B71C1C';
+    document.getElementById('lnina-ref-stat').innerHTML =
+      `<span style="font-size:18px;font-weight:700;color:${col};">${s.pct.toFixed(1)}%</span>` +
+      `<span style="font-size:9px;color:#888;">MW-weighted episodes above<br>${s.label}</span>` +
+      `<span style="font-size:9px;color:#aaa;">(${s.n} of ${s.of} events)</span>`;
+  }
+
+  setLninaRef(document.querySelector('.ref-btn-ln.ref-ln-active'));
 </script>
-<script>function aeToggleNav(btn){btn.nextElementSibling.classList.toggle('open')}document.addEventListener('click',function(e){if(!e.target.closest('.ae-nav-dd-wrap'))document.querySelectorAll('.ae-nav-dd').forEach(function(d){d.classList.remove('open')})});</script>
+<script>
+function aeToggleNav(btn){btn.nextElementSibling.classList.toggle('open')}
+document.addEventListener('click',function(e){if(!e.target.closest('.ae-nav-dd-wrap'))document.querySelectorAll('.ae-nav-dd').forEach(function(d){d.classList.remove('open')})});
+</script>
 </body>
 </html>
