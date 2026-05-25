@@ -33,6 +33,17 @@
   .spacer{flex:1}
   .brand-right{display:flex;align-items:center;font-size:10.5px;font-weight:300;color:#AAA}
 
+  .ae-nav-home{padding:3px 11px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#0f2040;background:#F5F5F5;text-decoration:none;white-space:nowrap;transition:background .12s;margin-right:6px}
+  .ae-nav-home:hover{background:#E0E0E0}
+  .ae-nav-dd-wrap{position:relative;margin-right:6px}
+  .ae-nav-dd-btn{padding:3px 11px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#0f2040;background:#F5F5F5;cursor:pointer;white-space:nowrap;transition:background .12s}
+  .ae-nav-dd-btn:hover{background:#E0E0E0}
+  .ae-nav-dd{display:none;position:absolute;top:calc(100% + 6px);left:0;background:#fff;border:1px solid #dde3ec;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:9999;min-width:210px;overflow:hidden}
+  .ae-nav-dd.open{display:block}
+  .ae-nav-dd a{display:block;padding:9px 16px;font-size:12px;color:#1a2332;text-decoration:none;transition:background .1s}
+  .ae-nav-dd a:hover{background:#f0f4fa}
+  .ae-nav-dd a.ae-current{font-weight:700;color:#0f2040;background:#e8edf4}
+
   /* ── Tab content ── */
   .tab-panel{display:none;flex:1;overflow:hidden}
   .tab-panel.active{display:flex;flex-direction:column}
@@ -120,36 +131,12 @@
   .ref-btn-ln:hover{background:#EBEBEB;color:#333}
   .ref-btn-ln.ref-ln-active{background:#1565C0;color:#fff;font-weight:500}
 
-  /* ── Aequus nav ── */
-  .ae-nav-home{padding:3px 11px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#0f2040;background:#F5F5F5;text-decoration:none;white-space:nowrap;transition:background .12s}
-  .ae-nav-home:hover{background:#E0E0E0}
-  .ae-nav-dd-wrap{position:relative}
-  .ae-nav-dd-btn{padding:3px 11px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#0f2040;background:#F5F5F5;cursor:pointer;white-space:nowrap;transition:background .12s}
-  .ae-nav-dd-btn:hover{background:#E0E0E0}
-  .ae-nav-dd{display:none;position:absolute;top:calc(100% + 6px);left:0;background:#fff;border:1px solid #dde3ec;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:9999;min-width:210px;overflow:hidden}
-  .ae-nav-dd.open{display:block}
-  .ae-nav-dd a{display:block;padding:9px 16px;font-size:12px;color:#1a2332;text-decoration:none;transition:background .1s}
-  .ae-nav-dd a:hover{background:#f0f4fa}
-  .ae-nav-dd a.ae-current{font-weight:700;color:#0f2040;background:#e8edf4}
-
 </style>
 </head>
 <body>
 
 <!-- ── Navigation ── -->
 <nav id="navbar">
-  <a href="../index.html" class="ae-nav-home">&#8592; Menu</a>
-  <div class="ae-nav-dd-wrap" style="margin-right:16px">
-    <button class="ae-nav-dd-btn" onclick="aeToggleNav(this)">Dashboards &#9660;</button>
-    <div class="ae-nav-dd">
-      <a href="../homicidios/index.html">&#128506;&#xFE0F; Homicidios Ecuador</a>
-      <a href="../deuda-interna/index.html">&#128202; Deuda Interna</a>
-      <a href="../electricidad/index.html" class="ae-current">&#9889; Electricidad &mdash; CCS</a>
-      <a href="../precios-commodities/index.html">&#128722; Diesel y WTI</a>
-      <a href="../sistema-financiero/cross-bank/index.html">&#127974; Sistema Financiero</a>
-      <a href="../sistema-financiero/per-bank/index.html">&#127974; S.F. &mdash; Per Bank</a>
-    </div>
-  </div>
   <div class="brand">
     <div class="brand-dot"></div>
     <div>
@@ -158,7 +145,10 @@
     </div>
   </div>
 
-  <button class="tab-btn active" data-target="panel-celec">
+  <button class="tab-btn active" data-target="panel-capacity">
+    <span class="tab-icon">⚡</span> Installed Capacity
+  </button>
+  <button class="tab-btn" data-target="panel-celec">
     <span class="tab-icon">📈</span> Paute Complex
   </button>
   <button class="tab-btn" data-target="panel-animation">
@@ -172,11 +162,27 @@
   </button>
 
   <div class="spacer"></div>
-  <div class="brand-right">WorldClim CRU-TS 4.09 &nbsp;·&nbsp; ARCONEL 2025 &nbsp;·&nbsp; NOAA ONI</div>
+  <a href="../index.html" class="ae-nav-home">&#8592; Menu</a>
+  <div class="ae-nav-dd-wrap">
+    <button class="ae-nav-dd-btn" onclick="aeToggleNav(this)">Dashboards &#9660;</button>
+    <div class="ae-nav-dd">
+      <a href="../homicidios/index.html">&#128506;&#xFE0F; Homicidios Ecuador</a>
+      <a href="../deuda-interna/index.html">&#128202; Deuda Interna</a>
+      <a href="../electricidad/index.html" class="ae-current">&#9889; Electricidad &mdash; CCS</a>
+      <a href="../precios-commodities/index.html">&#128722; Diesel y WTI</a>
+      <a href="../sistema-financiero/cross-bank/index.html">&#127974; S.F. &mdash; Cross Bank</a>
+    </div>
+  </div>
+  <div class="brand-right">WorldClim CRU-TS 4.09 &nbsp;·&nbsp; ARCONEL 2026 &nbsp;·&nbsp; NOAA ONI</div>
 </nav>
 
-<!-- ── Panel 1: Paute Complex (landing) ── -->
-<div class="tab-panel active" id="panel-celec">
+<!-- ── Panel 0: Installed Capacity ── -->
+<div class="tab-panel active" id="panel-capacity">
+  <iframe src="installed_capacity.html" id="capacity-frame" style="border:none;width:100%;display:block;height:100%"></iframe>
+</div>
+
+<!-- ── Panel 1: Paute Complex ── -->
+<div class="tab-panel" id="panel-celec">
   <iframe src="celec_dashboard.html" id="celec-frame" style="border:none;width:100%;display:block;"></iframe>
 </div>
 
@@ -206,6 +212,7 @@
             <div class="hmap-sub">24 events · 1951–2024 · WorldClim CRU-TS 4.09 at plant coordinates · Click to enlarge</div>
           </div>
         </div>
+        <!-- Toggle buttons -->
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <span style="font-size:10px;font-weight:500;color:#777;">Reference:</span>
           <div style="display:flex;background:#F5F5F5;border:1px solid #E0E0E0;border-radius:16px;overflow:hidden;">
@@ -215,6 +222,7 @@
             <button class="ref-btn"            data-ref="full"    onclick="setHmapRef(this)">vs full sample avg</button>
           </div>
         </div>
+        <!-- Explanatory note + stat box -->
         <div style="display:flex;gap:8px;width:100%;align-items:stretch;">
           <div id="hmap-ref-note" style="font-size:10px;color:#666;background:#FAFAFA;border:1px solid #EBEBEB;border-radius:6px;padding:5px 10px;line-height:1.55;flex:1;"></div>
           <div id="hmap-ref-stat" style="font-size:10px;color:#444;background:#FAFAFA;border:1px solid #EBEBEB;border-radius:6px;padding:5px 12px;line-height:1.55;white-space:nowrap;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:1px;flex-shrink:0;"></div>
@@ -233,6 +241,7 @@
             <div class="hmap-sub">18 events · 1951–2024 · WorldClim CRU-TS 4.09 at plant coordinates · Click to enlarge</div>
           </div>
         </div>
+        <!-- Toggle buttons -->
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <span style="font-size:10px;font-weight:500;color:#777;">Reference:</span>
           <div style="display:flex;background:#F5F5F5;border:1px solid #E0E0E0;border-radius:16px;overflow:hidden;">
@@ -242,6 +251,7 @@
             <button class="ref-btn-ln"               data-ref="full"    onclick="setLninaRef(this)">vs full sample avg</button>
           </div>
         </div>
+        <!-- Note + stat box -->
         <div style="display:flex;gap:8px;width:100%;align-items:stretch;">
           <div id="lnina-ref-note" style="font-size:10px;color:#666;background:#FAFAFA;border:1px solid #EBEBEB;border-radius:6px;padding:5px 10px;line-height:1.55;flex:1;"></div>
           <div id="lnina-ref-stat" style="font-size:10px;color:#444;background:#FAFAFA;border:1px solid #EBEBEB;border-radius:6px;padding:5px 12px;line-height:1.55;white-space:nowrap;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:1px;flex-shrink:0;"></div>
@@ -311,6 +321,10 @@
       if (btn.dataset.target === 'panel-annual') {
         const fr = document.getElementById('annual-frame');
         fr.style.height = (window.innerHeight - 52) + 'px';
+      }
+      if (btn.dataset.target === 'panel-capacity') {
+        const fr = document.getElementById('capacity-frame');
+        if (fr) { fr.style.height = (window.innerHeight - 52) + 'px'; }
       }
       if (btn.dataset.target === 'panel-celec') {
         const fr = document.getElementById('celec-frame');
@@ -384,6 +398,7 @@
       `<span style="font-size:9px;color:#aaa;">(${s.n} of ${s.of} events)</span>`;
   }
 
+  // Initialise on load
   setHmapRef(document.querySelector('.ref-btn.ref-active'));
 
   // ── La Niña reference toggle ───────────────────────────────────────────────
@@ -415,6 +430,7 @@
       `<span style="font-size:9px;color:#aaa;">(${s.n} of ${s.of} events)</span>`;
   }
 
+  // Initialise La Niña on load
   setLninaRef(document.querySelector('.ref-btn-ln.ref-ln-active'));
 </script>
 <script>

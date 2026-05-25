@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Installed Capacity — Ecuador</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',Arial,sans-serif;font-weight:300;background:#F5F6F8;color:#1A1A2E;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:1fr 1fr;
+    gap:14px;
+    padding:14px;
+    flex:1;
+    min-height:0;
+  }
+
+  .card{
+    background:#fff;border:1px solid #E5E5E5;border-radius:12px;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);
+    display:flex;flex-direction:column;
+    overflow:hidden;min-height:0;
+  }
+  .card-header{
+    padding:10px 16px 8px;border-bottom:1px solid #F0F0F0;flex-shrink:0;
+    display:flex;align-items:baseline;gap:10px;
+  }
+  .card-title{font-size:12px;font-weight:500;color:#1A1A2E}
+  .card-sub{font-size:10.5px;font-weight:300;color:#999}
+  .card-body{flex:1;min-height:0;position:relative;padding:10px 14px 8px}
+
+  .placeholder{
+    display:flex;align-items:center;justify-content:center;
+    height:100%;color:#CCC;font-size:12px;font-weight:300;letter-spacing:.3px;
+  }
+</style>
+</head>
+<body>
+
+<div class="grid">
+
+  <!-- Q1: Annual delta -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Annual Change in Installed Capacity</span>
+      <span class="card-sub">MW added / removed by fuel type · 2017–2026</span>
+    </div>
+    <div class="card-body">
+      <canvas id="deltaChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Q2: placeholder -->
+  <div class="card">
+    <div class="card-header"><span class="card-title">Capacity Levels</span></div>
+    <div class="card-body"><div class="placeholder">Coming soon</div></div>
+  </div>
+
+  <!-- Q3: placeholder -->
+  <div class="card">
+    <div class="card-header"><span class="card-title">Share by Fuel Type</span></div>
+    <div class="card-body"><div class="placeholder">Coming soon</div></div>
+  </div>
+
+  <!-- Q4: placeholder -->
+  <div class="card">
+    <div class="card-header"><span class="card-title">Hydro vs. Thermal</span></div>
+    <div class="card-body"><div class="placeholder">Coming soon</div></div>
+  </div>
+
+</div>
+
+<script>
+const YEARS = ['2017','2018','2019','2020','2021','2022','2023','2024','2025','2026'];
+
+const SERIES = [
+  { label:'Hydro',    color:'#1565C0', data:[68.2,550,10.2,17.5,8.1,79.1,1,218.9,-14.8,22.1] },
+  { label:'Therm.',   color:'#B71C1C', data:[-307.7,-5.5,-13.8,1.5,-48.6,-1.4,0,107.1,228.5,204.4] },
+  { label:'GEE',      color:'#1A1A2E', data:[0,0,0,0,0,0,0,359.6,47,-1.1] },
+  { label:'Biomass',  color:'#2E7D32', data:[0,0,0,0,0,0,0,11.3,0,1.3] },
+  { label:'Solar',    color:'#F9A825', data:[0,1.2,0,0,0,1,38.7,15.5,46.8,3.3] },
+  { label:'Wind',     color:'#0288D1', data:[0,0,0,0,0,28.6,21.4,0,0,0] },
+  { label:'Biogas',   color:'#6D4C41', data:[4.7,0,0,0,0.7,0,0,2.8,0,0] },
+];
+
+const ctx = document.getElementById('deltaChart').getContext('2d');
+
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: YEARS,
+    datasets: SERIES.map(s => ({
+      label: s.label,
+      data:  s.data,
+      backgroundColor: s.color,
+      borderColor: s.color,
+      borderWidth: 0,
+      borderRadius: 2,
+      stack: 'stack',
+    }))
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          font:{ size:10.5, family:'Segoe UI', weight:300 },
+          boxWidth:10, boxHeight:10,
+          padding:12, color:'#555',
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y >= 0 ? '+' : ''}${ctx.parsed.y.toFixed(1)} MW`
+        }
+      }
+    },
+    scales: {
+      x: {
+        stacked: true,
+        grid:{ display:false },
+        ticks:{ font:{size:10.5, family:'Segoe UI'}, color:'#777' }
+      },
+      y: {
+        stacked: true,
+        grid:{ color:'#F0F0F0' },
+        ticks:{ font:{size:10.5, family:'Segoe UI'}, color:'#777',
+                callback: v => (v >= 0 ? '+' : '') + v + ' MW' },
+        border:{ dash:[3,3] }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
