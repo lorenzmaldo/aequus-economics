@@ -211,6 +211,10 @@ tbody tr:hover           td:first-child { background: #eef3f9 !important; }
 .ae-nav-dd a{display:block;padding:9px 16px;font-size:12px;color:#1a2332;text-decoration:none;transition:background .1s}
 .ae-nav-dd a:hover{background:#f0f4fa}
 .ae-nav-dd a.ae-current{font-weight:700;color:#0f2040;background:#e8edf4}
+.sf-tabs{display:flex;align-items:center;gap:4px;margin-left:16px}
+.sf-tab{padding:3px 12px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#0f2040;background:#F5F5F5;text-decoration:none;white-space:nowrap;transition:background .12s}
+.sf-tab:hover{background:#E0E0E0}
+.sf-tab.sf-active{background:#1d3557;border-color:#1d3557;color:#fff}
 </style>
 </head>
 <body>
@@ -224,9 +228,12 @@ tbody tr:hover           td:first-child { background: #eef3f9 !important; }
       <a href="../../deuda-interna/index.html">&#128202; Deuda Interna</a>
       <a href="../../electricidad/index.html">&#9889; Electricidad &mdash; CCS</a>
       <a href="../../precios-commodities/index.html">&#128722; Diesel y WTI</a>
-      <a href="../../sistema-financiero/cross-bank/index.html" class="ae-current">&#127974; S.F. &mdash; Cross Bank</a>
-      <a href="../../sistema-financiero/per-bank/index.html">&#127974; S.F. &mdash; Per Bank</a>
+      <a href="../../sistema-financiero/cross-bank/index.html" class="ae-current">&#127974; Sistema Financiero</a>
     </div>
+  </div>
+  <div class="sf-tabs">
+    <a href="index.html" class="sf-tab sf-active">Cross Bank</a>
+    <a href="../per-bank/index.html" class="sf-tab">Per Bank</a>
   </div>
 </div>
 
