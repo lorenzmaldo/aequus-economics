@@ -54,6 +54,19 @@
       gap: 24px;
     }
 
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #5a6a82;
+      margin: 40px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .section-label:first-of-type { margin-top: 0; }
+
     /* ── Card ── */
     .card {
       background: #fff;
@@ -158,6 +171,8 @@
 </header>
 
 <main>
+
+  <p class="section-label">Seguridad &amp; Fiscal &amp; Commodities</p>
   <div class="grid">
 
     <!-- ── Homicidios Ecuador ── -->
@@ -205,6 +220,23 @@
     </div>
 
   </div>
+
+  <p class="section-label">Sistema Financiero</p>
+  <div class="grid">
+
+    <!-- ── S.F. Cross Bank ── -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">🏦</span>
+        <span class="badge badge-live">Live</span>
+      </div>
+      <h2>Bancos Privados — Cross Bank</h2>
+      <p>Balance sheet analytics for Ecuador's 14 major private banks. Levels, monthly flows, and cumulative changes across assets, loans, investments, and liabilities.</p>
+      <a class="btn" href="./sistema-financiero/cross-bank/index.html">View dashboard</a>
+    </div>
+
+  </div>
+
 </main>
 
 <footer>
