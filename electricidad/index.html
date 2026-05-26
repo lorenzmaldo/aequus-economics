@@ -33,17 +33,6 @@
   .spacer{flex:1}
   .brand-right{display:flex;align-items:center;font-size:10.5px;font-weight:300;color:#AAA}
 
-  .ae-nav-home{padding:3px 11px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#0f2040;background:#F5F5F5;text-decoration:none;white-space:nowrap;transition:background .12s;margin-right:6px}
-  .ae-nav-home:hover{background:#E0E0E0}
-  .ae-nav-dd-wrap{position:relative;margin-right:6px}
-  .ae-nav-dd-btn{padding:3px 11px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#0f2040;background:#F5F5F5;cursor:pointer;white-space:nowrap;transition:background .12s}
-  .ae-nav-dd-btn:hover{background:#E0E0E0}
-  .ae-nav-dd{display:none;position:absolute;top:calc(100% + 6px);left:0;background:#fff;border:1px solid #dde3ec;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:9999;min-width:210px;overflow:hidden}
-  .ae-nav-dd.open{display:block}
-  .ae-nav-dd a{display:block;padding:9px 16px;font-size:12px;color:#1a2332;text-decoration:none;transition:background .1s}
-  .ae-nav-dd a:hover{background:#f0f4fa}
-  .ae-nav-dd a.ae-current{font-weight:700;color:#0f2040;background:#e8edf4}
-
   /* ── Tab content ── */
   .tab-panel{display:none;flex:1;overflow:hidden}
   .tab-panel.active{display:flex;flex-direction:column}
@@ -145,34 +134,12 @@
   .ref-btn-col-ln:hover{background:#EBEBEB;color:#333}
   .ref-btn-col-ln.ref-col-ln-active{background:#1565C0;color:#fff;font-weight:500}
 
-  /* ── Aequus nav ── */
-  .ae-nav-home{padding:3px 11px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#0f2040;background:#F5F5F5;text-decoration:none;white-space:nowrap;transition:background .12s;margin-right:6px}
-  .ae-nav-home:hover{background:#E0E0E0}
-  .ae-nav-dd-wrap{position:relative;margin-right:6px}
-  .ae-nav-dd-btn{padding:3px 11px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#0f2040;background:#F5F5F5;cursor:pointer;white-space:nowrap;transition:background .12s}
-  .ae-nav-dd-btn:hover{background:#E0E0E0}
-  .ae-nav-dd{display:none;position:absolute;top:calc(100% + 6px);left:0;background:#fff;border:1px solid #dde3ec;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:9999;min-width:210px;overflow:hidden}
-  .ae-nav-dd.open{display:block}
-  .ae-nav-dd a{display:block;padding:9px 16px;font-size:12px;color:#1a2332;text-decoration:none;transition:background .1s}
-  .ae-nav-dd a:hover{background:#f0f4fa}
-  .ae-nav-dd a.ae-current{font-weight:700;color:#0f2040;background:#e8edf4}
 </style>
 </head>
 <body>
 
 <!-- ── Navigation ── -->
 <nav id="navbar">
-  <a href="../index.html" class="ae-nav-home">&#8592; Menu</a>
-  <div class="ae-nav-dd-wrap">
-    <button class="ae-nav-dd-btn" onclick="aeToggleNav(this)">Dashboards &#9660;</button>
-    <div class="ae-nav-dd">
-      <a href="../homicidios/index.html">&#128506;&#xFE0F; Homicidios Ecuador</a>
-      <a href="../deuda-interna/index.html">&#128202; Deuda Interna</a>
-      <a href="../electricidad/index.html" class="ae-current">&#9889; Electricidad &mdash; CCS</a>
-      <a href="../precios-commodities/index.html">&#128722; Diesel y WTI</a>
-      <a href="../sistema-financiero/cross-bank/index.html">&#127974; S.F. &mdash; Cross Bank</a>
-    </div>
-  </div>
   <div class="brand">
     <div class="brand-dot"></div>
     <div>
@@ -543,10 +510,6 @@
       `<span style="font-size:9px;color:#aaa;">(${s.n} of ${s.of} events)</span>`;
   }
   setColLnRef(document.querySelector('.ref-btn-col-ln.ref-col-ln-active'));
-</script>
-<script>
-function aeToggleNav(btn){btn.nextElementSibling.classList.toggle('open')}
-document.addEventListener('click',function(e){if(!e.target.closest('.ae-nav-dd-wrap'))document.querySelectorAll('.ae-nav-dd').forEach(function(d){d.classList.remove('open')})});
 </script>
 </body>
 </html>
