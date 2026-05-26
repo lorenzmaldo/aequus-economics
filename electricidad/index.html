@@ -130,8 +130,22 @@
   }
   .ref-btn-ln:hover{background:#EBEBEB;color:#333}
   .ref-btn-ln.ref-ln-active{background:#1565C0;color:#fff;font-weight:500}
+  .ref-btn-col{
+    padding:3px 11px;border:none;background:transparent;
+    font-size:10.5px;font-weight:400;color:#777;cursor:pointer;
+    transition:background .15s,color .15s;white-space:nowrap;
+  }
+  .ref-btn-col:hover{background:#EBEBEB;color:#333}
+  .ref-btn-col.ref-col-active{background:#B71C1C;color:#fff;font-weight:500}
+  .ref-btn-col-ln{
+    padding:3px 11px;border:none;background:transparent;
+    font-size:10.5px;font-weight:400;color:#777;cursor:pointer;
+    transition:background .15s,color .15s;white-space:nowrap;
+  }
+  .ref-btn-col-ln:hover{background:#EBEBEB;color:#333}
+  .ref-btn-col-ln.ref-col-ln-active{background:#1565C0;color:#fff;font-weight:500}
 
-</style>
+  /* ── Aequus nav ── */
 </head>
 <body>
 
@@ -266,27 +280,57 @@
   <!-- Colombia heatmaps (hidden by default) -->
   <div id="hmap-colombia" class="hmap-row" style="display:none">
     <div class="hmap-card">
-      <div class="hmap-header">
-        <span class="hmap-badge badge-en">El Ni&#241;o</span>
-        <div>
-          <div class="hmap-title">Rainfall Change During El Ni&#241;o Events vs. 2023  |  Colombia Hydro Plants &#8805; 50 MW</div>
-          <div class="hmap-sub">24 events · 1951–2024 · WorldClim CRU-TS 4.09 at plant coordinates · UPME 2025 · Click to enlarge</div>
+      <div class="hmap-header" style="flex-direction:column;align-items:flex-start;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;width:100%;">
+          <span class="hmap-badge badge-en">El Ni&#241;o</span>
+          <div>
+            <div class="hmap-title">Rainfall Change During El Ni&#241;o Events  |  Colombia Hydro Plants &#8805; 50 MW</div>
+            <div class="hmap-sub">24 events · 1951–2024 · WorldClim CRU-TS 4.09 at plant coordinates · UPME 2025 · Click to enlarge</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:10px;font-weight:500;color:#777;">Reference:</span>
+          <div style="display:flex;background:#F5F5F5;border:1px solid #E0E0E0;border-radius:16px;overflow:hidden;">
+            <button class="ref-btn-col ref-col-active" data-ref="2023"    onclick="setColEnRef(this)">vs 2023 (crisis)</button>
+            <button class="ref-btn-col"                data-ref="2019"    onclick="setColEnRef(this)">vs 2019 (wet year)</button>
+            <button class="ref-btn-col"                data-ref="avg1823" onclick="setColEnRef(this)">vs 2018–2023 avg</button>
+            <button class="ref-btn-col"                data-ref="full"    onclick="setColEnRef(this)">vs full sample avg</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;width:100%;align-items:stretch;">
+          <div id="col-en-ref-note" style="font-size:10px;color:#666;background:#FAFAFA;border:1px solid #EBEBEB;border-radius:6px;padding:5px 10px;line-height:1.55;flex:1;"></div>
+          <div id="col-en-ref-stat" style="font-size:10px;color:#444;background:#FAFAFA;border:1px solid #EBEBEB;border-radius:6px;padding:5px 12px;line-height:1.55;white-space:nowrap;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:1px;flex-shrink:0;"></div>
         </div>
       </div>
       <div class="hmap-img-wrap">
-        <img class="hmap-img" src="figures/heatmap_colombia_elnino_vs_2023.png" alt="Colombia El Nino heatmap" title="Click to enlarge"/>
+        <img class="hmap-img" id="col-elnino-hmap-img" src="figures/heatmap_colombia_elnino_vs_2023.png" alt="Colombia El Nino heatmap" title="Click to enlarge"/>
       </div>
     </div>
     <div class="hmap-card">
-      <div class="hmap-header">
-        <span class="hmap-badge badge-ln">La Ni&#241;a</span>
-        <div>
-          <div class="hmap-title">Rainfall Change During La Ni&#241;a Events vs. 2023  |  Colombia Hydro Plants &#8805; 50 MW</div>
-          <div class="hmap-sub">18 events · 1951–2023 · WorldClim CRU-TS 4.09 at plant coordinates · UPME 2025 · Click to enlarge</div>
+      <div class="hmap-header" style="flex-direction:column;align-items:flex-start;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;width:100%;">
+          <span class="hmap-badge badge-ln">La Ni&#241;a</span>
+          <div>
+            <div class="hmap-title">Rainfall Change During La Ni&#241;a Events  |  Colombia Hydro Plants &#8805; 50 MW</div>
+            <div class="hmap-sub">18 events · 1951–2024 · WorldClim CRU-TS 4.09 at plant coordinates · UPME 2025 · Click to enlarge</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:10px;font-weight:500;color:#777;">Reference:</span>
+          <div style="display:flex;background:#F5F5F5;border:1px solid #E0E0E0;border-radius:16px;overflow:hidden;">
+            <button class="ref-btn-col-ln ref-col-ln-active" data-ref="2023"    onclick="setColLnRef(this)">vs 2023 (crisis)</button>
+            <button class="ref-btn-col-ln"                   data-ref="2019"    onclick="setColLnRef(this)">vs 2019 (wet year)</button>
+            <button class="ref-btn-col-ln"                   data-ref="avg1823" onclick="setColLnRef(this)">vs 2018–2023 avg</button>
+            <button class="ref-btn-col-ln"                   data-ref="full"    onclick="setColLnRef(this)">vs full sample avg</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;width:100%;align-items:stretch;">
+          <div id="col-ln-ref-note" style="font-size:10px;color:#666;background:#FAFAFA;border:1px solid #EBEBEB;border-radius:6px;padding:5px 10px;line-height:1.55;flex:1;"></div>
+          <div id="col-ln-ref-stat" style="font-size:10px;color:#444;background:#FAFAFA;border:1px solid #EBEBEB;border-radius:6px;padding:5px 12px;line-height:1.55;white-space:nowrap;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:1px;flex-shrink:0;"></div>
         </div>
       </div>
       <div class="hmap-img-wrap">
-        <img class="hmap-img" src="figures/heatmap_colombia_lanina_vs_2023.png" alt="Colombia La Nina heatmap" title="Click to enlarge"/>
+        <img class="hmap-img" id="col-lanina-hmap-img" src="figures/heatmap_colombia_lanina_vs_2023.png" alt="Colombia La Nina heatmap" title="Click to enlarge"/>
       </div>
     </div>
   </div>
@@ -432,6 +476,62 @@
 
   // Initialise La Niña on load
   setLninaRef(document.querySelector('.ref-btn-ln.ref-ln-active'));
+
+  // ── Colombia El Niño reference toggle ─────────────────────────────────────
+  const COL_EN_NOTES = {
+    "2023":    "<strong>vs 2023 — Crisis year (Ecuador).</strong> 2023 was dry in Ecuador but near-normal for Colombia. El Niño typically reduces Colombian rainfall — red cells confirm drier conditions.",
+    "2019":    "<strong>vs 2019 — Wet year.</strong> 2019 was relatively wet in Colombia. El Niño episodes are substantially drier vs this benchmark.",
+    "avg1823": "<strong>vs 2018–2023 avg — Modern baseline.</strong> Recent operating period. Shows how El Niño deviates from recent normal conditions in Colombia.",
+    "full":    "<strong>vs full sample avg (1951–2024) — Climatological mean.</strong> Long-run historical norm. El Niño = structurally drier than average across Colombian hydro.",
+  };
+  const COL_EN_STATS = {
+    "2023":    { pct: 20.8, n:  5, of: 24, label: "vs 2023 reference" },
+    "2019":    { pct: 16.7, n:  4, of: 24, label: "vs 2019 wet-year level" },
+    "avg1823": { pct:  0.0, n:  0, of: 24, label: "vs 2018–2023 average" },
+    "full":    { pct:  4.2, n:  1, of: 24, label: "vs full sample average" },
+  };
+  function setColEnRef(btn) {
+    document.querySelectorAll('.ref-btn-col').forEach(b => b.classList.remove('ref-col-active'));
+    btn.classList.add('ref-col-active');
+    const ref = btn.dataset.ref;
+    document.getElementById('col-elnino-hmap-img').src = `figures/heatmap_colombia_elnino_vs_${ref}.png`;
+    document.getElementById('col-en-ref-note').innerHTML = COL_EN_NOTES[ref];
+    const s = COL_EN_STATS[ref];
+    const col = s.pct >= 50 ? '#2E7D32' : '#B71C1C';
+    document.getElementById('col-en-ref-stat').innerHTML =
+      `<span style="font-size:18px;font-weight:700;color:${col};">${s.pct.toFixed(1)}%</span>` +
+      `<span style="font-size:9px;color:#888;">MW-weighted episodes above<br>${s.label}</span>` +
+      `<span style="font-size:9px;color:#aaa;">(${s.n} of ${s.of} events)</span>`;
+  }
+  setColEnRef(document.querySelector('.ref-btn-col.ref-col-active'));
+
+  // ── Colombia La Niña reference toggle ─────────────────────────────────────
+  const COL_LN_NOTES = {
+    "2023":    "<strong>vs 2023 — Crisis year (Ecuador).</strong> La Niña strongly wets Colombian catchments — most episodes show clearly higher rainfall than the 2023 reference.",
+    "2019":    "<strong>vs 2019 — Wet year.</strong> Even vs a wet benchmark, La Niña episodes deliver more rainfall across most Colombian hydro regions.",
+    "avg1823": "<strong>vs 2018–2023 avg — Modern baseline.</strong> La Niña is structurally wetter than the recent modern average across Colombian plants.",
+    "full":    "<strong>vs full sample avg (1951–2024) — Climatological mean.</strong> La Niña episodes are consistently above the long-run historical norm for Colombian hydro.",
+  };
+  const COL_LN_STATS = {
+    "2023":    { pct: 88.2, n: 15, of: 17, label: "vs 2023 reference" },
+    "2019":    { pct: 82.4, n: 14, of: 17, label: "vs 2019 wet-year level" },
+    "avg1823": { pct: 76.5, n: 13, of: 17, label: "vs 2018–2023 average" },
+    "full":    { pct: 82.4, n: 14, of: 17, label: "vs full sample average" },
+  };
+  function setColLnRef(btn) {
+    document.querySelectorAll('.ref-btn-col-ln').forEach(b => b.classList.remove('ref-col-ln-active'));
+    btn.classList.add('ref-col-ln-active');
+    const ref = btn.dataset.ref;
+    document.getElementById('col-lanina-hmap-img').src = `figures/heatmap_colombia_lanina_vs_${ref}.png`;
+    document.getElementById('col-ln-ref-note').innerHTML = COL_LN_NOTES[ref];
+    const s = COL_LN_STATS[ref];
+    const col = s.pct >= 50 ? '#2E7D32' : '#B71C1C';
+    document.getElementById('col-ln-ref-stat').innerHTML =
+      `<span style="font-size:18px;font-weight:700;color:${col};">${s.pct.toFixed(1)}%</span>` +
+      `<span style="font-size:9px;color:#888;">MW-weighted episodes above<br>${s.label}</span>` +
+      `<span style="font-size:9px;color:#aaa;">(${s.n} of ${s.of} events)</span>`;
+  }
+  setColLnRef(document.querySelector('.ref-btn-col-ln.ref-col-ln-active'));
 </script>
 <script>
 function aeToggleNav(btn){btn.nextElementSibling.classList.toggle('open')}
