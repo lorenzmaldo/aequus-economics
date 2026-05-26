@@ -62,6 +62,7 @@
     </div>
     <div class="card-body">
       <canvas id="consumChart"></canvas>
+      <div id="consumStats" style="position:absolute;top:10px;right:14px;display:flex;flex-direction:column;gap:4px;text-align:right;pointer-events:none"></div>
     </div>
   </div>
 
@@ -110,6 +111,16 @@ const CONSUM_VALUES = [2158.8,1848.8,2078.4,2072.8,2090.8,1920.9,1935.5,1954.2,1
   const slope = (n*sxy - sx*sy) / (n*sx2 - sx*sx);
   const intercept = (sy - slope*sx) / n;
   const trend = CONSUM_VALUES.map((_, i) => +(intercept + slope*i).toFixed(1));
+
+  // Stat 1: total trend growth over sample
+  const trendGrowthPct = ((trend[n-1] - trend[0]) / trend[0] * 100).toFixed(1);
+  // Stat 2: YoY — last point vs same month prior year (n-1 vs n-13)
+  const yoyPct = ((CONSUM_VALUES[n-1] - CONSUM_VALUES[n-13]) / CONSUM_VALUES[n-13] * 100).toFixed(1);
+  const sign = v => (+v >= 0 ? '+' : '');
+  const pill = (label, val) =>
+    `<span style="font-size:10px;color:#444;background:rgba(255,255,255,.9);padding:2px 8px;border-radius:8px;border:1px solid #E0E0E0;white-space:nowrap">${label}: <b>${sign(val)}${val}%</b></span>`;
+  document.getElementById('consumStats').innerHTML =
+    pill('Trend Jan-18→Mar-26', trendGrowthPct) + pill('YoY Mar-26', yoyPct);
 
   new Chart(document.getElementById('consumChart').getContext('2d'), {
     type: 'line',
