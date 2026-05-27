@@ -66,10 +66,15 @@
     </div>
   </div>
 
-  <!-- Q3: placeholder -->
+  <!-- Q3: Billing by sector -->
   <div class="card">
-    <div class="card-header"><span class="card-title">Share by Fuel Type</span></div>
-    <div class="card-body"><div class="placeholder">Coming soon</div></div>
+    <div class="card-header">
+      <span class="card-title">Invoiced Energy by Consumer Sector</span>
+      <span class="card-sub">GWh · Jan 2018 – Mar 2026 · regulated clients</span>
+    </div>
+    <div class="card-body">
+      <canvas id="sectorChart"></canvas>
+    </div>
   </div>
 
   <!-- Q4: placeholder -->
@@ -101,7 +106,7 @@ const CONSUM_VALUES = [2158.8,1848.8,2078.4,2072.8,2090.8,1920.9,1935.5,1954.2,1
   const labels = [];
   let y = 2018, m = 0;
   for (let i = 0; i < CONSUM_VALUES.length; i++) {
-    labels.push(months[m] + '-' + String(y).slice(2));
+    labels.push(months[m] + ' ' + y);
     if (++m === 12) { m = 0; y++; }
   }
 
@@ -169,10 +174,12 @@ const CONSUM_VALUES = [2158.8,1848.8,2078.4,2072.8,2090.8,1920.9,1935.5,1954.2,1
         x: {
           grid: { display:false },
           ticks: {
-            font:{size:10,family:'Segoe UI'}, color:'#777', maxTicksLimit:9,
+            font:{size:10,family:'Segoe UI'}, color:'#777', maxRotation:0,
             callback: function(val, idx) {
-              const lbl = labels[idx];
-              return lbl && lbl.startsWith('Jan') ? lbl.replace('Jan-','') : null;
+              const last = labels.length - 1;
+              if (idx === last) return labels[idx];
+              if (idx % 6 === 0 && (last - idx) > 3) return labels[idx];
+              return null;
             }
           }
         },
@@ -180,6 +187,65 @@ const CONSUM_VALUES = [2158.8,1848.8,2078.4,2072.8,2090.8,1920.9,1935.5,1954.2,1
           grid: { color:'#F0F0F0' },
           ticks: { font:{size:10,family:'Segoe UI'}, color:'#777', callback: v => v.toLocaleString() + ' GWh' },
           border: { dash:[3,3] }
+        }
+      }
+    }
+  });
+})();
+
+// --- Q3: Invoiced energy by sector ---
+(function(){
+  const RES = [632.2,634.0,641.0,662.2,642.6,601.3,574.9,591.6,577.7,595.9,616.4,630.6,672.3,663.2,669.8,674.9,667.6,630.9,605.4,602.4,589.9,613.1,624.3,642.4,702.2,682.0,682.1,729.2,696.6,707.4,642.0,633.3,635.4,647.3,637.8,667.9,700.6,691.3,695.7,719.7,663.2,645.2,628.4,634.9,617.6,658.1,642.1,662.4,684.5,669.6,698.0,702.3,668.4,623.6,615.8,626.2,633.5,604.3,638.5,668.2,720.6,703.5,729.6,757.4,757.8,749.6,696.1,727.1,716.4,699.7,700.8,687.6,781.4,686.6,764.2,806.4,775.3,729.6,641.4,701.2,664.7,599.4,539.7,580.1,729.6,776.1,773.3,809.8,806.6,747.0,702.3,702.3,692.2,725.9,732.6,727.6,810.9,780.4,809.6];
+  const COM = [329.2,313.5,340.1,321.8,323.8,316.7,308.6,314.9,307.9,310.1,319.2,324.7,333.8,323.4,332.9,339.4,338.8,328.2,320.6,321.0,313.6,315.0,321.2,335.6,347.6,342.0,327.9,265.4,225.7,216.5,261.3,269.3,275.9,289.3,293.5,305.7,309.0,303.8,315.5,316.8,296.9,303.2,306.2,313.2,307.4,315.3,321.6,331.9,330.1,317.3,337.0,348.5,346.2,324.7,318.3,333.9,335.1,325.2,336.2,347.4,364.0,354.4,362.2,371.5,385.1,378.7,362.7,379.4,373.7,365.1,367.6,361.1,379.6,342.7,376.6,389.5,381.7,380.5,342.1,372.0,355.7,327.1,289.6,306.1,359.6,380.6,375.1,396.6,394.8,391.0,380.1,380.7,378.9,385.8,388.8,398.7,405.7,403.8,404.1];
+  const IND = [407.6,397.1,402.6,444.9,442.9,442.3,439.5,433.1,412.5,427.3,435.9,406.0,413.1,413.8,440.0,429.9,429.5,408.7,415.0,434.7,400.6,417.3,442.1,409.5,427.8,452.0,400.1,278.6,291.7,364.2,393.2,403.2,436.8,462.5,461.3,449.4,444.2,446.3,480.8,470.2,491.9,475.3,473.2,480.2,416.8,490.1,504.0,487.5,491.2,486.5,491.1,546.2,546.7,479.6,522.9,505.2,517.9,503.4,519.1,528.8,515.9,507.7,494.0,526.4,550.7,540.5,497.7,523.8,517.5,497.3,528.5,473.6,512.8,450.3,515.5,533.6,532.6,570.2,530.1,537.8,493.1,445.4,405.1,397.4,485.4,546.2,542.4,576.8,591.2,605.4,576.2,552.1,572.9,576.3,588.0,570.8,574.6,585.8,563.3];
+
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const labels = [];
+  let y = 2018, m = 0;
+  for (let i = 0; i < RES.length; i++) {
+    labels.push(months[m] + ' ' + y);
+    if (++m === 12) { m = 0; y++; }
+  }
+
+  new Chart(document.getElementById('sectorChart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label:'Residential', data:RES, borderColor:'#1565C0', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, order:3 },
+        { label:'Commercial',  data:COM, borderColor:'#F9A825', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, order:2 },
+        { label:'Industrial',  data:IND, borderColor:'#2E7D32', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, order:1 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend: {
+          position:'bottom',
+          labels:{ font:{size:10.5,family:'Segoe UI',weight:300}, boxWidth:20, boxHeight:2, padding:12, color:'#555' }
+        },
+        tooltip: {
+          mode:'index', intersect:false,
+          callbacks:{ label: c => ` ${c.dataset.label}: ${c.parsed.y.toFixed(1)} GWh` }
+        }
+      },
+      scales: {
+        x: {
+          grid:{ display:false },
+          ticks:{
+            font:{size:10,family:'Segoe UI'}, color:'#777', maxRotation:0,
+            callback: function(val, idx) {
+              const last = labels.length - 1;
+              if (idx === last) return labels[idx];
+              if (idx % 6 === 0 && (last - idx) > 3) return labels[idx];
+              return null;
+            }
+          }
+        },
+        y: {
+          grid:{ color:'#F0F0F0' },
+          ticks:{ font:{size:10,family:'Segoe UI'}, color:'#777', callback: v => v.toLocaleString() + ' GWh' },
+          border:{ dash:[3,3] }
         }
       }
     }
