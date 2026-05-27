@@ -39,7 +39,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-weight:300;background:#ECEFF1;
 #dashboard{
   display:grid;
   grid-template-columns:1fr 1fr;
-  grid-template-rows:1fr 1fr;
+  grid-template-rows:1fr 1fr 0.55fr;
   height:calc(100vh - 42px);
   gap:8px;padding:8px;
 }
@@ -209,6 +209,18 @@ canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
     <div class="chart-area"><canvas id="ch-q4"></canvas></div>
   </div>
 
+  <!-- Q5: CCS Daily Flow (full-width bottom) -->
+  <div class="quad" style="grid-column:1/-1">
+    <div class="qh">
+      <div class="qh-left">
+        <h4>Coca Codo Sinclair &#8212; Daily Flow</h4>
+        <div class="qsub">m&#179;/s &#183; Jan 2024&#8211;present &#183; Ecuador&#8217;s largest hydroelectric complex (~1,500 MW installed)</div>
+      </div>
+    </div>
+    <div class="chips" id="chips-q5"></div>
+    <div class="chart-area"><canvas id="ch-q5"></canvas></div>
+  </div>
+
 </div>
 
 <script>
@@ -225,11 +237,12 @@ const S = {
   q3_sm:  1,
   q4_view:'stk',
   q4_sm:  1,
+  q5_sm:  1,
 };
 
 // ── Colors ────────────────────────────────────────────────────────────────────
 const C = {
-  mol:'#1565C0', maz:'#2E7D32', sop:'#E65100', msf:'#6A1B9A',
+  mol:'#1565C0', maz:'#2E7D32', sop:'#E65100', msf:'#6A1B9A', ccs:'#00796B',
 };
 function rgba(hex,a){
   const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
@@ -517,13 +530,61 @@ function buildQ4() {
       '~'+(+avgs[i]/24).toFixed(0)+' MW')).join('');
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// Q5: CCS Daily Flow + 15-day MA
+// ══════════════════════════════════════════════════════════════════════════════
+function srcCcs() {
+  let d = D.ccs_flow;
+  if (S.dateFrom) d = d.filter(r => r.date >= S.dateFrom);
+  if (S.dateTo)   d = d.filter(r => r.date <= S.dateTo);
+  return d;
+}
+
+function buildQ5() {
+  kill('q5');
+  const ccs = srcCcs();
+  if (!ccs.length) return;
+  const raw = ccs
+    .filter(r => r.flow_ccs != null && r.flow_ccs > 0)
+    .map(r => ({x: r.date, y: r.flow_ccs}));
+  const ma15 = raw.map((p,i) => {
+    const sl = raw.slice(Math.max(0,i-14), i+1).map(q => q.y);
+    return {x: p.x, y: sl.reduce((a,b)=>a+b,0)/sl.length};
+  });
+
+  CH.q5 = new Chart(document.getElementById('ch-q5'), {
+    type:'line',
+    data:{datasets:[
+      {label:'Daily flow (m³/s)', data:raw,
+       borderColor:'rgba(0,121,107,0.4)', borderWidth:1,
+       backgroundColor:'transparent', pointRadius:0, tension:0.1},
+      {label:'15-day avg (m³/s)', data:ma15,
+       borderColor:C.ccs, borderWidth:2.2,
+       backgroundColor:'rgba(0,121,107,0.10)', pointRadius:0, tension:0.3, fill:true},
+    ]},
+    options:{...BASE_OPTS,
+      scales:{x:XS, y:{...YS, min:0,
+        title:{display:true, text:'m³/s', color:'#AAA', font:{size:9}}}}
+    }
+  });
+
+  const vals = raw.map(p => p.y);
+  const latest = vals.length ? vals[vals.length-1].toFixed(0) : '—';
+  const avg    = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(0) : '—';
+  const max    = vals.length ? Math.max(...vals).toFixed(0) : '—';
+  document.getElementById('chips-q5').innerHTML =
+    chip(latest+' m³/s','Latest flow','')+
+    chip(avg   +' m³/s','Period average','')+
+    chip(max   +' m³/s','Period maximum','');
+}
+
 // ── Chip helper ───────────────────────────────────────────────────────────────
 function chip(v,l,s){
   return `<div class="chip"><div class="cv">${v}</div><div class="cl">${l}${s?'<br>'+s:''}</div></div>`;
 }
 
 // ── Initial build ─────────────────────────────────────────────────────────────
-function buildAll(){ buildQ1(); buildQ2(); buildQ3(); buildQ4(); }
+function buildAll(){ buildQ1(); buildQ2(); buildQ3(); buildQ4(); buildQ5(); }
 
 const m=D.meta;
 document.getElementById('tb-meta').textContent=
@@ -541,7 +602,7 @@ function applyRange(from,to){
   S.dateFrom=from; S.dateTo=to;
   document.getElementById('date-from').value=from||firstDate;
   document.getElementById('date-to').value=to||lastDate;
-  buildQ1();buildQ2();buildQ3();
+  buildQ1();buildQ2();buildQ3();buildQ5();
 }
 
 document.querySelectorAll('.ts-btn[data-yr]').forEach(b=>{
@@ -558,12 +619,12 @@ document.querySelectorAll('.ts-btn[data-yr]').forEach(b=>{
 document.getElementById('date-from').addEventListener('change',function(){
   S.dateFrom=this.value||null;
   document.querySelectorAll('.ts-btn[data-yr]').forEach(x=>x.classList.remove('active'));
-  buildQ1();buildQ2();buildQ3();
+  buildQ1();buildQ2();buildQ3();buildQ5();
 });
 document.getElementById('date-to').addEventListener('change',function(){
   S.dateTo=this.value||null;
   document.querySelectorAll('.ts-btn[data-yr]').forEach(x=>x.classList.remove('active'));
-  buildQ1();buildQ2();buildQ3();
+  buildQ1();buildQ2();buildQ3();buildQ5();
 });
 
 (function(){
