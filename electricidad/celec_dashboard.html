@@ -8,7 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:hidden}
+html,body{min-height:100%}body{overflow-y:auto}
 body{font-family:'Segoe UI',Arial,sans-serif;font-weight:300;background:#ECEFF1;color:#1A1A2E}
 
 /* ── Top bar ── */
@@ -39,8 +39,8 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-weight:300;background:#ECEFF1;
 #dashboard{
   display:grid;
   grid-template-columns:1fr 1fr;
-  grid-template-rows:1fr 1fr 0.55fr;
-  height:calc(100vh - 42px);
+  grid-template-rows:repeat(3, calc(50vh - 35px));
+  height:auto;
   gap:8px;padding:8px;
 }
 
@@ -209,8 +209,8 @@ canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
     <div class="chart-area"><canvas id="ch-q4"></canvas></div>
   </div>
 
-  <!-- Q5: CCS Daily Flow (full-width bottom) -->
-  <div class="quad" style="grid-column:1/-1">
+  <!-- Q5: CCS Daily Flow -->
+  <div class="quad">
     <div class="qh">
       <div class="qh-left">
         <h4>Coca Codo Sinclair &#8212; Daily Flow</h4>
@@ -219,6 +219,16 @@ canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
     </div>
     <div class="chips" id="chips-q5"></div>
     <div class="chart-area"><canvas id="ch-q5"></canvas></div>
+  </div>
+
+  <!-- Q6: Reserved -->
+  <div class="quad" style="border-style:dashed;opacity:0.45">
+    <div class="qh">
+      <div class="qh-left">
+        <h4>&#8212;</h4>
+        <div class="qsub">Reserved</div>
+      </div>
+    </div>
   </div>
 
 </div>
