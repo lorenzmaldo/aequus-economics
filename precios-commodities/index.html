@@ -286,7 +286,7 @@ function buildPriceDatasets(src) {
 }
 
 function buildCrackDatasets(src) {
-  const cKey = freq==='daily' ? (maMode==='ma2'?'crack_ma30':'crack')
+  const cKey = freq==='daily' ? (maMode==='raw'?'crack_raw':maMode==='ma1'?'crack':'crack_ma30')
                                : (maMode==='raw'?'crack':maMode==='ma1'?'crack_ma3':'crack_ma6');
   return [{ label:'Crack Spread (USD/bbl)', data:nullToNaN(src[cKey]),
             borderColor:COLORS.crack, borderWidth:freq==='daily'?1.2:2, pointRadius:0, tension:0.2, fill:true,
@@ -347,11 +347,11 @@ function setView(v) {
 function updateKPI() {
   if (!DATA) return;
   const src = freq==='daily' ? DATA.daily : DATA.monthly;
-  const cKey = freq==='daily' ? (maMode==='ma2'?'crack_ma30':'crack')
+  const cKey = freq==='daily' ? (maMode==='raw'?'crack_raw':maMode==='ma1'?'crack':'crack_ma30')
                                : (maMode==='raw'?'crack':maMode==='ma1'?'crack_ma3':'crack_ma6');
   const lbl = {
-    daily:   { raw:'Crack Spread (15d)', ma1:'15d MA Crack Spread', ma2:'30d MA Crack Spread' },
-    monthly: { raw:'Crack Spread (mes)', ma1:'Crack 3m MA',          ma2:'Crack 6m MA' }
+    daily:   { raw:'Crack Spread (crudo)', ma1:'Crack Spread 15d MA', ma2:'Crack Spread 30d MA' },
+    monthly: { raw:'Crack Spread (mes)',   ma1:'Crack 3m MA',         ma2:'Crack 6m MA' }
   }[freq][maMode];
   const arr = src[cKey] || [];
   let val = null;
