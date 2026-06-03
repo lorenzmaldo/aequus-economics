@@ -53,6 +53,10 @@ main{flex:1;max-width:1200px;margin:0 auto;padding:32px 24px;width:100%}
 .controls-label{font-size:.75rem;font-weight:600;color:#5a6a82;letter-spacing:.04em;text-transform:uppercase}
 .dl-btn{padding:5px 13px;border:1px solid #0a3373;border-radius:8px;background:#fff;color:#0a3373;font-size:.78rem;font-weight:600;cursor:pointer;transition:background .15s,color .15s;white-space:nowrap}
 .dl-btn:hover{background:#0a3373;color:#fff}
+.crack-kpi{display:flex;flex-direction:column;justify-content:center;background:#f7faf7;border:1px solid #b7dfc0;border-radius:8px;padding:4px 13px;min-width:130px}
+.crack-kpi-lbl{font-size:.67rem;font-weight:600;color:#5a6a82;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.crack-kpi-val{font-size:1.1rem;font-weight:700;color:#27ae60;white-space:nowrap}
+.crack-kpi-val.neg{color:#c0392b}
 
 /* ── View toggle (prices vs crack) ── */
 .view-toggle{display:flex;background:#e8edf4;border-radius:8px;overflow:hidden;border:1px solid #d0d8e8;flex-shrink:0}
@@ -134,6 +138,10 @@ footer{text-align:center;padding:28px 16px;background:#f2f2f2;font-size:.76rem;c
         <button id="btn-raw" class="active" onclick="setMA('raw')">Crudo</button>
         <button id="btn-ma1"               onclick="setMA('ma1')">15d MA</button>
         <button id="btn-ma2"               onclick="setMA('ma2')">30d MA</button>
+      </div>
+      <div class="crack-kpi">
+        <span class="crack-kpi-lbl" id="kpi-label">Crack Spread</span>
+        <span class="crack-kpi-val" id="kpi-value">—</span>
       </div>
     </div>
     <div class="chart-wrap" id="wrap-prices"><canvas id="chart-prices"></canvas></div>
@@ -320,6 +328,7 @@ function updateIntlCharts() {
   document.getElementById('through-intl').textContent = formatThrough(src.dates[src.dates.length-1]);
   document.getElementById('btn-ma1').textContent = freq==='daily'?'15d MA':'3m MA';
   document.getElementById('btn-ma2').textContent = freq==='daily'?'30d MA':'6m MA';
+  updateKPI();
 }
 
 function setView(v) {
@@ -333,6 +342,24 @@ function setView(v) {
                    crack: 'Diferencial entre el precio del diesel y el WTI (USD/bbl)' };
   document.getElementById('intl-title').innerHTML = titles[v];
   document.getElementById('intl-desc').innerHTML  = descs[v];
+}
+
+function updateKPI() {
+  if (!DATA) return;
+  const src = freq==='daily' ? DATA.daily : DATA.monthly;
+  const cKey = freq==='daily' ? (maMode==='ma2'?'crack_ma30':'crack')
+                               : (maMode==='raw'?'crack':maMode==='ma1'?'crack_ma3':'crack_ma6');
+  const lbl = {
+    daily:   { raw:'Crack Spread (15d)', ma1:'15d MA Crack Spread', ma2:'30d MA Crack Spread' },
+    monthly: { raw:'Crack Spread (mes)', ma1:'Crack 3m MA',          ma2:'Crack 6m MA' }
+  }[freq][maMode];
+  const arr = src[cKey] || [];
+  let val = null;
+  for (let i = arr.length-1; i >= 0; i--) { if (arr[i] != null && !isNaN(arr[i])) { val = arr[i]; break; } }
+  document.getElementById('kpi-label').textContent = lbl;
+  const el = document.getElementById('kpi-value');
+  if (val !== null) { el.textContent = (val>=0?'+':'')+val.toFixed(2)+' $/bbl'; el.className='crack-kpi-val'+(val<0?' neg':''); }
+  else              { el.textContent = '—'; el.className='crack-kpi-val'; }
 }
 
 function setFreq(f) {
@@ -391,7 +418,7 @@ function downloadAllXLSX() {
 
 fetch('data.json')
   .then(r=>r.json())
-  .then(d=>{ DATA=d; document.getElementById('badge-updated').textContent='Actualizado: '+d.updated; initIntlCharts(d.daily); })
+  .then(d=>{ DATA=d; document.getElementById('badge-updated').textContent='Actualizado: '+d.updated; initIntlCharts(d.daily); updateKPI(); })
   .catch(e=>console.warn('data.json not available (file:// protocol?)', e));
 
 
