@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Global Economy · Aequus Economics</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;font-weight:300;background:#ECEFF1;color:#1A1A2E;overflow-y:auto}
+
+/* ── Top bar ── */
+#topbar{
+  position:sticky;top:0;z-index:100;
+  height:42px;background:#fff;border-bottom:1px solid #DDD;
+  display:flex;align-items:center;padding:0 16px;gap:12px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);flex-shrink:0;
+}
+.tb-title{font-size:13px;font-weight:500;color:#1A1A2E;white-space:nowrap}
+.tb-sep{width:1px;height:20px;background:#E0E0E0;flex-shrink:0}
+.tb-spacer{flex:1}
+.tb-meta{font-size:9.5px;font-weight:300;color:#AAA;text-align:right;line-height:1.6}
+
+/* ── Aequus nav ── */
+.ae-nav-home{padding:3px 11px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#0f2040;background:#F5F5F5;text-decoration:none;white-space:nowrap;transition:background .12s}
+.ae-nav-home:hover{background:#E0E0E0}
+.ae-nav-dd-wrap{position:relative}
+.ae-nav-dd-btn{padding:3px 11px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#0f2040;background:#F5F5F5;cursor:pointer;white-space:nowrap;transition:background .12s;font-family:inherit}
+.ae-nav-dd-btn:hover{background:#E0E0E0}
+.ae-nav-dd{display:none;position:absolute;top:calc(100% + 6px);left:0;background:#fff;border:1px solid #dde3ec;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:9999;min-width:210px;overflow:hidden}
+.ae-nav-dd.open{display:block}
+.ae-nav-dd a{display:block;padding:9px 16px;font-size:12px;color:#1a2332;text-decoration:none;transition:background .1s}
+.ae-nav-dd a:hover{background:#f0f4fa}
+.ae-nav-dd a.ae-current{font-weight:700;color:#0f2040;background:#e8edf4}
+
+/* ── Excel button ── */
+.btn-xl{padding:4px 14px;border-radius:12px;border:1px solid #DDD;font-size:11px;font-weight:400;color:#333;background:#F5F5F5;cursor:pointer;white-space:nowrap;font-family:inherit;transition:background .12s}
+.btn-xl:hover{background:#E0E0E0}
+
+/* ── Dashboard grid ── */
+#dashboard{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  padding:10px;
+  max-width:1500px;
+  margin:0 auto;
+}
+
+/* ── Chart cards ── */
+.quad{
+  background:#fff;border-radius:10px;border:1px solid #E5E5E5;
+  box-shadow:0 1px 6px rgba(0,0,0,.05);
+  display:flex;flex-direction:column;overflow:hidden;
+  padding:10px 14px 10px;
+  height:500px;
+}
+.quad.wide{grid-column:1 / -1}
+
+/* ── Quad header ── */
+.qh{display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0;margin-bottom:6px}
+.qh-left{display:flex;flex-direction:column;gap:2px}
+.qh h4{font-size:12px;font-weight:600;color:#37474F;line-height:1.2}
+.qh .qsub{font-size:9.5px;font-weight:300;color:#AAA}
+.qh-right{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:8px}
+
+/* ── Chart area ── */
+.chart-area{flex:1;min-height:0;position:relative}
+canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
+
+/* ── Chart footer note ── */
+.qnote{font-size:8.5px;font-weight:300;color:#BBB;flex-shrink:0;margin-top:4px;line-height:1.4}
+</style>
+</head>
+<body>
+
+<!-- ── Top bar ── -->
+<div id="topbar">
+  <a href="../index.html" class="ae-nav-home">&#8592; Menu</a>
+  <div class="ae-nav-dd-wrap">
+    <button class="ae-nav-dd-btn" onclick="aeToggleNav(this)">Dashboards &#9660;</button>
+    <div class="ae-nav-dd">
+      <a href="../economia-global/index.html" class="ae-current">&#127758; Econom&#237;a Global</a>
+      <a href="../homicidios/index.html">&#128506;&#xFE0F; Homicidios Ecuador</a>
+      <a href="../deuda-interna/index.html">&#128202; Deuda Interna</a>
+      <a href="../electricidad/index.html">&#9889; Electricidad &mdash; CCS</a>
+      <a href="../precios-commodities/index.html">&#128722; Diesel y WTI</a>
+      <a href="../sistema-financiero/cross-bank/index.html">&#127974; S.F. &mdash; Cross Bank</a>
+    </div>
+  </div>
+  <div class="tb-sep"></div>
+  <span class="tb-title">Econom&#237;a Global</span>
+  <div class="tb-sep"></div>
+  <span class="tb-meta" style="font-size:11px;color:#888;font-weight:300">IMF World Economic Outlook, April 2026</span>
+  <div class="tb-spacer"></div>
+  <button class="btn-xl" onclick="downloadExcel()">&#11015; Excel</button>
+  <div class="tb-sep"></div>
+  <div class="tb-meta">Updated June 2026</div>
+</div>
+
+<!-- ── Dashboard grid ── -->
+<div id="dashboard">
+
+  <!-- Chart 1: Global Current Account Imbalances (full width) -->
+  <div class="quad wide">
+    <div class="qh">
+      <div class="qh-left">
+        <h4>Global Current Account Imbalances</h4>
+        <span class="qsub">Annual &middot; USD billions &middot; 2000&ndash;2026</span>
+      </div>
+      <div class="qh-right">
+        <button class="btn-xl" onclick="downloadCAB()" title="Download this chart's data as Excel">&#11015; Excel</button>
+      </div>
+    </div>
+    <div class="chart-area">
+      <canvas id="cab"></canvas>
+    </div>
+    <div class="qnote">
+      Positive bars = surplus &nbsp;|&nbsp; Negative bars = deficit &nbsp;|&nbsp; US deficit shown as positive red line (sign reversed) &nbsp;|&nbsp;
+      EM excludes China &nbsp;|&nbsp; Others = residual (advanced economies ex-US/Japan/UK/Euro Zone) &nbsp;|&nbsp;
+      2024: IMF estimate &nbsp;|&nbsp; 2025&ndash;2026: IMF projections
+    </div>
+  </div>
+
+</div><!-- /dashboard -->
+
+<script>
+// ── Data: IMF WEO April 2026 ──────────────────────────────────────────
+// EM ex-China = OEMDC group minus China. Others = residual ensuring global balance.
+const years     = [2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025,2026];
+const china     = [20.432,17.405,35.422,43.052,68.941,132.378,231.843,353.183,420.569,243.257,237.81,136.097,215.392,148.204,236.047,293.022,191.337,188.676,24.131,102.91,248.836,352.886,443.374,263.382,423.919,729.1,725.45];
+const japan     = [130.591,86.189,109.149,139.437,182.066,170.094,174.48,212.179,142.573,145.21,221.06,129.882,59.675,45.952,36.771,136.448,197.779,203.535,177.821,176.341,149.936,196.206,89.909,156.247,189.165,214.17,166.446];
+const eurozone  = [-94.213,-23.63,43.448,21.655,71.65,11.156,-18.444,5.189,-259.933,-39.176,-40.814,-47.925,124.329,253.26,317.657,338.893,403.622,430.593,410.009,324.662,244.956,408.576,-30.811,264.668,443.03,288.2,254.721];
+const uk        = [-31.019,-29.511,-35.666,-37.721,-56.256,-50.853,-84.537,-115.316,-114.331,-74.444,-68.835,-43.643,-84.775,-126.348,-148.66,-140.901,-142.501,-91.292,-107.988,-71.345,-74.156,-24.158,-61.17,-122.174,-110.057,-125.15,-144.175];
+const emExChina = [69.382,33.492,54.015,114.664,166.625,322.512,414.716,282.605,279.417,19.455,56.276,232.998,127.104,37.618,-72.122,-373.949,-300.439,-210.304,-69.856,-89.959,-96.451,22.482,239.078,25.18,-2.953,-128.088,-195.621];
+const others    = [306.744,310.14,249.738,241.206,202.865,163.945,98.589,-1.291,228.228,85.427,26.513,47.893,-23.543,-19.169,0.363,154.941,46.418,-153.593,4.877,-0.646,120.377,-97.359,312.754,340.7,242.196,137.779,392.909];
+const usDeficit = [401.917,394.085,456.106,522.293,635.891,749.232,816.647,736.549,696.523,379.729,432.01,455.302,418.182,339.517,370.056,408.454,396.216,367.615,438.994,441.963,593.498,858.633,993.134,928.003,1185.3,1116.011,1199.73];
+
+// ── Chart ──────────────────────────────────────────────────────────────
+new Chart(document.getElementById('cab').getContext('2d'), {
+  data: {
+    labels: years,
+    datasets: [
+      { type:'bar', label:'China',         data:china,     backgroundColor:'#e63946', stack:'world', order:2, barPercentage:0.85, categoryPercentage:0.9 },
+      { type:'bar', label:'Japan',         data:japan,     backgroundColor:'#f4a261', stack:'world', order:2, barPercentage:0.85, categoryPercentage:0.9 },
+      { type:'bar', label:'Euro Zone',     data:eurozone,  backgroundColor:'#2a9d8f', stack:'world', order:2, barPercentage:0.85, categoryPercentage:0.9 },
+      { type:'bar', label:'United Kingdom',data:uk,        backgroundColor:'#457b9d', stack:'world', order:2, barPercentage:0.85, categoryPercentage:0.9 },
+      { type:'bar', label:'EM ex-China',   data:emExChina, backgroundColor:'#6a994e', stack:'world', order:2, barPercentage:0.85, categoryPercentage:0.9 },
+      { type:'bar', label:'Others',        data:others,    backgroundColor:'#c9c9c9', stack:'world', order:2, barPercentage:0.85, categoryPercentage:0.9 },
+      {
+        type:'line', label:'US Deficit',   data:usDeficit,
+        borderColor:'#c1121f', backgroundColor:'transparent',
+        borderWidth:2.5, pointRadius:3, pointHoverRadius:5,
+        pointBackgroundColor:'#c1121f', pointBorderColor:'#fff', pointBorderWidth:1.5,
+        tension:0.25, fill:false, order:1, yAxisID:'y'
+      }
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    interaction:{ mode:'index', intersect:false },
+    plugins:{
+      legend:{
+        position:'bottom',
+        labels:{ padding:16, font:{size:11}, usePointStyle:true, pointStyleWidth:10, color:'#374151' }
+      },
+      tooltip:{
+        backgroundColor:'rgba(17,24,39,0.92)',
+        titleFont:{size:12,weight:'600'}, bodyFont:{size:11.5}, padding:12,
+        callbacks:{
+          title: items => String(items[0].label),
+          label: item => {
+            const v = item.parsed.y;
+            return '  ' + item.dataset.label + ': ' + (v >= 0 ? '+' : '') + v.toFixed(0) + ' bn';
+          }
+        }
+      }
+    },
+    scales:{
+      x:{ stacked:true, grid:{display:false}, border:{display:false},
+          ticks:{font:{size:10}, color:'#6b7280', maxRotation:45, minRotation:45} },
+      y:{ stacked:true, grid:{color:'rgba(0,0,0,0.05)'}, border:{display:false},
+          ticks:{
+            font:{size:10}, color:'#6b7280',
+            callback: v => Math.abs(v)>=1000 ? '$'+(v/1000).toFixed(1)+'T' : '$'+v+' bn'
+          },
+          title:{display:true, text:'USD Billions', font:{size:10}, color:'#9ca3af'}
+        }
+    }
+  }
+});
+
+// ── Excel exports ──────────────────────────────────────────────────────
+function buildCABSheet() {
+  const header = ['Year','China','Japan','Euro Zone','United Kingdom','EM ex-China','Others','US Deficit'];
+  const rows = [header];
+  for (let i = 0; i < years.length; i++) {
+    rows.push([years[i], china[i], japan[i], eurozone[i], uk[i], emExChina[i], others[i], usDeficit[i]]);
+  }
+  return rows;
+}
+
+function downloadCAB() {
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(buildCABSheet());
+  ws['!cols'] = [{wch:6},{wch:10},{wch:10},{wch:12},{wch:16},{wch:14},{wch:10},{wch:12}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Global CA Imbalances');
+  addMetaSheet(wb);
+  XLSX.writeFile(wb, 'Global_CA_Imbalances.xlsx');
+}
+
+function downloadExcel() {
+  const wb = XLSX.utils.book_new();
+  const ws1 = XLSX.utils.aoa_to_sheet(buildCABSheet());
+  ws1['!cols'] = [{wch:6},{wch:10},{wch:10},{wch:12},{wch:16},{wch:14},{wch:10},{wch:12}];
+  XLSX.utils.book_append_sheet(wb, ws1, 'Global CA Imbalances');
+  addMetaSheet(wb);
+  XLSX.writeFile(wb, 'Aequus_Global_Economy.xlsx');
+}
+
+function addMetaSheet(wb) {
+  const meta = [
+    ['Aequus Economics — Global Economy Dashboard'],
+    [''],
+    ['Source', 'IMF World Economic Outlook, April 2026'],
+    ['Downloaded', new Date().toISOString().slice(0,10)],
+    ['Notes', 'EM ex-China = IMF OEMDC aggregate minus China'],
+    ['', 'Others = residual ensuring global CA balances to zero'],
+    ['', 'US Deficit shown as positive (sign reversed from IMF BCA series)'],
+    ['', '2024: IMF estimate | 2025-2026: IMF projections'],
+  ];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(meta), 'Notes');
+}
+
+// ── Nav toggle ──────────────────────────────────────────────────────────
+function aeToggleNav(btn){ btn.nextElementSibling.classList.toggle('open') }
+document.addEventListener('click', function(e){
+  if (!e.target.closest('.ae-nav-dd-wrap'))
+    document.querySelectorAll('.ae-nav-dd').forEach(d => d.classList.remove('open'));
+});
+</script>
+</body>
+</html>
