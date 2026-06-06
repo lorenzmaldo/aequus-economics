@@ -56,7 +56,14 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-weight:300;background:#ECEFF1;
   padding:10px 14px 10px;
   height:500px;
 }
-.quad.wide{grid-column:1 / -1}
+.quad.placeholder{
+  background:#fafafa;border:1.5px dashed #D0D5DD;
+  box-shadow:none;
+  align-items:center;justify-content:center;gap:8px;
+}
+.ph-icon{font-size:2rem;opacity:.25}
+.ph-label{font-size:11.5px;font-weight:500;color:#9CA3AF}
+.ph-sub{font-size:10px;font-weight:300;color:#C4C9D4}
 
 /* ── Quad header ── */
 .qh{display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0;margin-bottom:6px}
@@ -102,8 +109,8 @@ canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
 <!-- ── Dashboard grid ── -->
 <div id="dashboard">
 
-  <!-- Chart 1: Global Current Account Imbalances (full width) -->
-  <div class="quad wide">
+  <!-- Q1: Global Current Account Imbalances -->
+  <div class="quad">
     <div class="qh">
       <div class="qh-left">
         <h4>Global Current Account Imbalances</h4>
@@ -121,6 +128,13 @@ canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
       EM excludes China &nbsp;|&nbsp; Others = residual (advanced economies ex-US/Japan/UK/Euro Zone) &nbsp;|&nbsp;
       2024: IMF estimate &nbsp;|&nbsp; 2025&ndash;2026: IMF projections
     </div>
+  </div>
+
+  <!-- Q2: Placeholder -->
+  <div class="quad placeholder">
+    <div class="ph-icon">&#128202;</div>
+    <div class="ph-label">Next chart</div>
+    <div class="ph-sub">Coming soon</div>
   </div>
 
 </div><!-- /dashboard -->
