@@ -130,11 +130,26 @@ canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
     </div>
   </div>
 
-  <!-- Q2: Placeholder -->
-  <div class="quad placeholder">
-    <div class="ph-icon">&#128202;</div>
-    <div class="ph-label">Next chart</div>
-    <div class="ph-sub">Coming soon</div>
+  <!-- Q2: USA Inward FDI by Source Economy -->
+  <div class="quad">
+    <div class="qh">
+      <div class="qh-left">
+        <h4>Inward FDI Stock in the United States by Source Economy</h4>
+        <span class="qsub">Annual &middot; USD billions &middot; 2020&ndash;2024</span>
+      </div>
+      <div class="qh-right">
+        <button class="btn-xl" onclick="downloadFDI()" title="Download FDI data as Excel">&#11015; Excel</button>
+      </div>
+    </div>
+    <div class="chart-area">
+      <canvas id="fdi"></canvas>
+    </div>
+    <div class="qnote">
+      Net position (liabilities less assets), all instruments, all entities &nbsp;|&nbsp;
+      <strong>Euro Core</strong> = Germany + France + Switzerland + Sweden + Belgium &nbsp;|&nbsp;
+      <strong>Euro Hubs</strong> = Netherlands + Ireland + Luxembourg (financial pass-through centres) &nbsp;|&nbsp;
+      China shown separately despite small size &nbsp;|&nbsp; Source: IMF CDIS DIP 12.0.1 (2024 release)
+    </div>
   </div>
 
 </div><!-- /dashboard -->
@@ -245,6 +260,91 @@ function addMetaSheet(wb) {
     ['', '2024: IMF estimate | 2025-2026: IMF projections'],
   ];
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(meta), 'Notes');
+}
+
+// ── FDI Data: IMF CDIS DIP 12.0.1 (2024 release) ─────────────────────
+// USA inward FDI, net liabilities less assets, all instruments, all entities
+// USD billions. Euro Core = DE+FR+CH+SE+BE. Euro Hubs = NL+IE+LU.
+const fdiYears    = ['2020','2021','2022','2023','2024'];
+const fdiJapan    = [632.1, 653.5, 668.4, 699.8, 754.1];
+const fdiUK       = [535.7, 627.3, 689.8, 689.8, 742.7];
+const fdiCanada   = [487.4, 548.0, 577.6, 685.7, 732.9];
+const fdiEuroCore = [1049.4, 1105.7, 1162.3, 1238.9, 1316.1];
+const fdiEuroHubs = [1120.9, 1332.8, 1212.6, 1211.9, 1258.9];
+const fdiChina    = [36.7,   31.8,   30.5,   30.8,   34.0];
+const fdiOther    = [330.1,  342.4,  326.3,  339.8,  364.7];
+const fdiRoW      = [421.2,  424.9,  456.7,  478.9,  504.3];
+
+new Chart(document.getElementById('fdi').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: fdiYears,
+    datasets: [
+      { label:'Japan',       data:fdiJapan,    backgroundColor:'#e63946', stack:'a', borderColor:'#fff', borderWidth:0.5 },
+      { label:'United Kingdom', data:fdiUK,    backgroundColor:'#457b9d', stack:'a', borderColor:'#fff', borderWidth:0.5 },
+      { label:'Canada',      data:fdiCanada,   backgroundColor:'#f4a261', stack:'a', borderColor:'#fff', borderWidth:0.5 },
+      { label:'Euro Core',   data:fdiEuroCore, backgroundColor:'#2a9d8f', stack:'a', borderColor:'#fff', borderWidth:0.5 },
+      { label:'Euro Hubs',   data:fdiEuroHubs, backgroundColor:'#a8dadc', stack:'a', borderColor:'#fff', borderWidth:0.5 },
+      { label:'China',       data:fdiChina,    backgroundColor:'#6a994e', stack:'a', borderColor:'#fff', borderWidth:0.5 },
+      { label:'Other',       data:fdiOther,    backgroundColor:'#bbb',    stack:'a', borderColor:'#fff', borderWidth:0.5 },
+      { label:'Rest of World', data:fdiRoW,   backgroundColor:'#e0e0e0', stack:'a', borderColor:'#fff', borderWidth:0.5 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode:'index', intersect:false },
+    plugins: {
+      legend: {
+        position:'bottom',
+        labels: { padding:14, font:{size:11}, usePointStyle:true, pointStyleWidth:10, color:'#374151' }
+      },
+      tooltip: {
+        backgroundColor:'rgba(17,24,39,0.92)',
+        titleFont:{size:12,weight:'600'}, bodyFont:{size:11.5}, padding:12,
+        callbacks: {
+          label: item => '  ' + item.dataset.label + ': $' + item.parsed.y.toFixed(1) + 'B',
+          footer: items => {
+            const total = items.reduce((s,i) => s + i.parsed.y, 0);
+            return 'Total: $' + total.toFixed(0) + 'B';
+          }
+        }
+      }
+    },
+    scales: {
+      x: { stacked:true, grid:{display:false}, border:{display:false},
+           ticks:{font:{size:11}, color:'#6b7280'} },
+      y: { stacked:true, grid:{color:'rgba(0,0,0,0.05)'}, border:{display:false},
+           ticks:{
+             font:{size:10}, color:'#6b7280',
+             callback: v => '$' + (v/1000).toFixed(1) + 'T'
+           },
+           title:{display:true, text:'USD Billions', font:{size:10}, color:'#9ca3af'} }
+    }
+  }
+});
+
+function buildFDISheet() {
+  const rows = [['Economy','2020','2021','2022','2023','2024']];
+  const series = [
+    ['Japan', fdiJapan], ['United Kingdom', fdiUK], ['Canada', fdiCanada],
+    ['Euro Core (DE+FR+CH+SE+BE)', fdiEuroCore], ['Euro Hubs (NL+IE+LU)', fdiEuroHubs],
+    ['China', fdiChina], ['Other (AU+KR+ES+KY)', fdiOther], ['Rest of World', fdiRoW],
+  ];
+  for (const [label, vals] of series) rows.push([label, ...vals]);
+  const totals = fdiYears.map((_,i) => +(fdiJapan[i]+fdiUK[i]+fdiCanada[i]+fdiEuroCore[i]+fdiEuroHubs[i]+fdiChina[i]+fdiOther[i]+fdiRoW[i]).toFixed(1));
+  rows.push(['TOTAL', ...totals]);
+  rows.push([]);
+  rows.push(['Source: IMF CDIS DIP 12.0.1 (2024 release)']);
+  rows.push(['Metric: Inward FDI, Net (liabilities less assets), all instruments, all entities']);
+  return rows;
+}
+
+function downloadFDI() {
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(buildFDISheet());
+  ws['!cols'] = [{wch:34}, ...fdiYears.map(()=>({wch:10}))];
+  XLSX.utils.book_append_sheet(wb, ws, 'USA Inward FDI');
+  XLSX.writeFile(wb, 'usa_inward_fdi_2020_2024.xlsx');
 }
 
 // ── Nav toggle ──────────────────────────────────────────────────────────
