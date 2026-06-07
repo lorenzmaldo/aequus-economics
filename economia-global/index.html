@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Global Economy · Aequus Economics</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-sankey@0.12.0/dist/chartjs-chart-sankey.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -130,25 +131,66 @@ canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
     </div>
   </div>
 
-  <!-- Q2: USA Inward FDI by Source Economy -->
+  <!-- Q2: Current Account Imbalances vs. Net External Financial Positions -->
   <div class="quad">
     <div class="qh">
       <div class="qh-left">
-        <h4>Inward FDI Stock in the United States by Source Economy</h4>
-        <span class="qsub">Annual &middot; USD billions &middot; 2020&ndash;2024</span>
+        <h4>Current Account Imbalances vs. Net External Financial Positions</h4>
+        <span class="qsub">USD billions &middot; Cumulative CAB (2009&ndash;2024) vs. net external position by instrument, 2024</span>
       </div>
       <div class="qh-right">
-        <button class="btn-xl" onclick="downloadFDI()" title="Download FDI data as Excel">&#11015; Excel</button>
+        <button class="btn-xl" onclick="downloadCABNet()" title="Download this chart's data as Excel">&#11015; Excel</button>
       </div>
     </div>
     <div class="chart-area">
-      <canvas id="fdi"></canvas>
+      <canvas id="cabnet"></canvas>
     </div>
     <div class="qnote">
-      Net position (liabilities less assets), all instruments, all entities &nbsp;|&nbsp;
-      <strong>Euro Core</strong> = Germany + France + Switzerland + Sweden + Belgium &nbsp;|&nbsp;
-      <strong>Euro Hubs</strong> = Netherlands + Ireland + Luxembourg (financial pass-through centres) &nbsp;|&nbsp;
-      China shown separately despite small size &nbsp;|&nbsp; Source: IMF CDIS DIP 12.0.1 (2024 release)
+      <strong>Cumulative CA balance</strong> = sum of annual current account balances, 2009&ndash;2024 &nbsp;|&nbsp;
+      <strong>Net external position</strong> = 2024 stock, stacked by instrument: net FDI + net Portfolio (IMF CDIS/CPIS bilateral group matrices, intra-group flows excluded) + Reserves (World Bank/IMF IFS) &nbsp;|&nbsp;
+      China&rsquo;s gap narrows from about &minus;$3.5T to about &minus;$0.1T once reserves are added &mdash; its surplus sits overwhelmingly in reserves, largely invisible in bilateral FDI/Portfolio data &nbsp;|&nbsp; Sources: IMF WEO, CDIS, CPIS, World Bank/IMF IFS
+    </div>
+  </div>
+
+  <!-- Q3: Global FDI Flow Map -->
+  <div class="quad">
+    <div class="qh">
+      <div class="qh-left">
+        <h4>Global FDI Flow Map &mdash; 2024</h4>
+        <span class="qsub">USD billions &middot; FDI stock positions (outward claims), all instruments &middot; bilateral, by group</span>
+      </div>
+      <div class="qh-right">
+        <button class="btn-xl" onclick="downloadFDIFlow()" title="Download FDI flow matrix as Excel">&#11015; Excel</button>
+      </div>
+    </div>
+    <div class="chart-area">
+      <canvas id="fdiSankey"></canvas>
+    </div>
+    <div class="qnote">
+      Each ribbon runs from the economy that <em>holds</em> the FDI claim (sender) to the economy where the investment is <em>located</em> (receiver) &nbsp;|&nbsp;
+      Euro Zone = 20 euro-area members &nbsp;|&nbsp; EM ex-China = World minus the 41 IMF Advanced Economies minus China &nbsp;|&nbsp;
+      Intra-group flows excluded &nbsp;|&nbsp; Source: IMF CDIS DIP 12.0.1 (2024 release)
+    </div>
+  </div>
+
+  <!-- Q4: Global Portfolio Investment Flow Map -->
+  <div class="quad">
+    <div class="qh">
+      <div class="qh-left">
+        <h4>Global Portfolio Investment Flow Map &mdash; 2024</h4>
+        <span class="qsub">USD billions &middot; Portfolio investment positions (holdings, total instruments) &middot; bilateral, by group</span>
+      </div>
+      <div class="qh-right">
+        <button class="btn-xl" onclick="downloadPortfolioFlow()" title="Download portfolio flow matrix as Excel">&#11015; Excel</button>
+      </div>
+    </div>
+    <div class="chart-area">
+      <canvas id="pfSankey"></canvas>
+    </div>
+    <div class="qnote">
+      Each ribbon runs from the economy that <em>holds</em> the portfolio asset (sender/investor) to the economy that <em>issued</em> the security (receiver) &nbsp;|&nbsp;
+      Euro Zone = 20 euro-area members &nbsp;|&nbsp; EM ex-China = World minus the 41 IMF Advanced Economies minus China &nbsp;|&nbsp;
+      Intra-group flows excluded &nbsp;|&nbsp; Source: IMF CPIS PIP 5.0.0 (2024 release)
     </div>
   </div>
 
@@ -262,89 +304,201 @@ function addMetaSheet(wb) {
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(meta), 'Notes');
 }
 
-// ── FDI Data: IMF CDIS DIP 12.0.1 (2024 release) ─────────────────────
-// USA inward FDI, net liabilities less assets, all instruments, all entities
-// USD billions. Euro Core = DE+FR+CH+SE+BE. Euro Hubs = NL+IE+LU.
-const fdiYears    = ['2020','2021','2022','2023','2024'];
-const fdiJapan    = [632.1, 653.5, 668.4, 699.8, 754.1];
-const fdiUK       = [535.7, 627.3, 689.8, 689.8, 742.7];
-const fdiCanada   = [487.4, 548.0, 577.6, 685.7, 732.9];
-const fdiEuroCore = [1049.4, 1105.7, 1162.3, 1238.9, 1316.1];
-const fdiEuroHubs = [1120.9, 1332.8, 1212.6, 1211.9, 1258.9];
-const fdiChina    = [36.7,   31.8,   30.5,   30.8,   34.0];
-const fdiOther    = [330.1,  342.4,  326.3,  339.8,  364.7];
-const fdiRoW      = [421.2,  424.9,  456.7,  478.9,  504.3];
+// ── Q2 Data: CAB vs Net External Position, decomposed by instrument ──
+// Cumulative CAB: IMF WEO. Net FDI / Net Portfolio: derived from the bilateral
+// IMF CDIS / CPIS group-to-group matrices below (claims held abroad minus claims
+// held by others, intra-group flows excluded). Reserves: World Bank/IMF IFS, 2024.
+const gGroupOrder = ['United States','Euro Zone','Japan','United Kingdom','China','EM ex-China','Others'];
 
-new Chart(document.getElementById('fdi').getContext('2d'), {
+const cnCumCAB = {
+  'United States': -9006.6, 'Euro Zone': 3805.5, 'Japan': 2311.9,
+  'United Kingdom': -1492.4, 'China': 3749.3, 'EM ex-China': -455.8, 'Others': 1088.1,
+};
+const cnFdiNet = {
+  'United States': 204.5, 'Euro Zone': 2350.1, 'Japan': 1722.8,
+  'United Kingdom': -1803.0, 'China': 498.0, 'EM ex-China': -2159.8, 'Others': -812.6,
+};
+const cnPtfNet = {
+  'United States': -9080.9, 'Euro Zone': 4366.0, 'Japan': 1524.2,
+  'United Kingdom': -1304.1, 'China': -295.9, 'EM ex-China': 178.6, 'Others': 4612.1,
+};
+const cnReserves = {
+  'United States': 910.0, 'Euro Zone': 1345.9, 'Japan': 1230.7,
+  'United Kingdom': 174.6, 'China': 3456.0, 'EM ex-China': 5183.8, 'Others': 2563.4,
+};
+const cnNetPosition    = Object.fromEntries(gGroupOrder.map(g => [g, +(cnFdiNet[g] + cnPtfNet[g]).toFixed(1)]));
+const cnNetPositionExt = Object.fromEntries(gGroupOrder.map(g => [g, +(cnNetPosition[g] + cnReserves[g]).toFixed(1)]));
+
+new Chart(document.getElementById('cabnet').getContext('2d'), {
   type: 'bar',
   data: {
-    labels: fdiYears,
+    labels: gGroupOrder,
     datasets: [
-      { label:'Japan',       data:fdiJapan,    backgroundColor:'#e63946', stack:'a', borderColor:'#fff', borderWidth:0.5 },
-      { label:'United Kingdom', data:fdiUK,    backgroundColor:'#457b9d', stack:'a', borderColor:'#fff', borderWidth:0.5 },
-      { label:'Canada',      data:fdiCanada,   backgroundColor:'#f4a261', stack:'a', borderColor:'#fff', borderWidth:0.5 },
-      { label:'Euro Core',   data:fdiEuroCore, backgroundColor:'#2a9d8f', stack:'a', borderColor:'#fff', borderWidth:0.5 },
-      { label:'Euro Hubs',   data:fdiEuroHubs, backgroundColor:'#a8dadc', stack:'a', borderColor:'#fff', borderWidth:0.5 },
-      { label:'China',       data:fdiChina,    backgroundColor:'#6a994e', stack:'a', borderColor:'#fff', borderWidth:0.5 },
-      { label:'Other',       data:fdiOther,    backgroundColor:'#bbb',    stack:'a', borderColor:'#fff', borderWidth:0.5 },
-      { label:'Rest of World', data:fdiRoW,   backgroundColor:'#e0e0e0', stack:'a', borderColor:'#fff', borderWidth:0.5 },
+      { label:'Cumulative CA balance, 2009–2024', data: gGroupOrder.map(g=>cnCumCAB[g]),   backgroundColor:'#1d3557', borderColor:'#fff', borderWidth:0.6, borderRadius:3, stack:'cab' },
+      { label:'Net FDI position, 2024',           data: gGroupOrder.map(g=>cnFdiNet[g]),   backgroundColor:'#e9c46a', borderColor:'#fff', borderWidth:0.6, stack:'financial' },
+      { label:'Net Portfolio position, 2024',     data: gGroupOrder.map(g=>cnPtfNet[g]),   backgroundColor:'#f4a261', borderColor:'#fff', borderWidth:0.6, stack:'financial' },
+      { label:'Reserve assets, 2024',              data: gGroupOrder.map(g=>cnReserves[g]), backgroundColor:'#588b8b', borderColor:'#fff', borderWidth:0.6, stack:'financial' },
     ]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    interaction: { mode:'index', intersect:false },
     plugins: {
-      legend: {
-        position:'bottom',
-        labels: { padding:14, font:{size:11}, usePointStyle:true, pointStyleWidth:10, color:'#374151' }
-      },
+      legend: { position:'bottom', labels:{ padding:10, font:{size:10}, usePointStyle:true, pointStyleWidth:10, color:'#374151' } },
       tooltip: {
-        backgroundColor:'rgba(17,24,39,0.92)',
-        titleFont:{size:12,weight:'600'}, bodyFont:{size:11.5}, padding:12,
+        backgroundColor:'rgba(17,24,39,0.92)', titleFont:{size:12,weight:'600'}, bodyFont:{size:11}, padding:12,
         callbacks: {
-          label: item => '  ' + item.dataset.label + ': $' + item.parsed.y.toFixed(1) + 'B',
-          footer: items => {
-            const total = items.reduce((s,i) => s + i.parsed.y, 0);
-            return 'Total: $' + total.toFixed(0) + 'B';
-          }
+          label: ctx => '  ' + ctx.dataset.label + ': $' + ctx.parsed.y.toFixed(0) + 'B',
+          footer: items => items.some(i => i.dataset.stack === 'financial')
+            ? 'Net position total (FDI+Portfolio+Reserves): $' + cnNetPositionExt[items[0].label].toFixed(0) + 'B'
+            : ''
         }
       }
     },
     scales: {
-      x: { stacked:true, grid:{display:false}, border:{display:false},
-           ticks:{font:{size:11}, color:'#6b7280'} },
+      x: { stacked:true, grid:{display:false}, border:{display:false}, ticks:{font:{size:10}, color:'#6b7280'} },
       y: { stacked:true, grid:{color:'rgba(0,0,0,0.05)'}, border:{display:false},
-           ticks:{
-             font:{size:10}, color:'#6b7280',
-             callback: v => '$' + (v/1000).toFixed(1) + 'T'
-           },
-           title:{display:true, text:'USD Billions', font:{size:10}, color:'#9ca3af'} }
+           ticks:{ font:{size:10}, color:'#6b7280', callback: v => '$'+(v/1000).toFixed(0)+'T' },
+           title:{display:true, text:'USD Billions (negative = deficit / net debtor)', font:{size:10}, color:'#9ca3af'} }
     }
   }
 });
 
-function buildFDISheet() {
-  const rows = [['Economy','2020','2021','2022','2023','2024']];
-  const series = [
-    ['Japan', fdiJapan], ['United Kingdom', fdiUK], ['Canada', fdiCanada],
-    ['Euro Core (DE+FR+CH+SE+BE)', fdiEuroCore], ['Euro Hubs (NL+IE+LU)', fdiEuroHubs],
-    ['China', fdiChina], ['Other (AU+KR+ES+KY)', fdiOther], ['Rest of World', fdiRoW],
+function downloadCABNet() {
+  const wb = XLSX.utils.book_new();
+  const rows = [['Economy','Cumulative CA balance 2009-2024 (USD bn)','Net FDI position 2024 (USD bn)','Net Portfolio position 2024 (USD bn)','Reserve assets 2024 (USD bn)','Net external position 2024 — FDI+Portfolio (USD bn)','Net external position 2024 — FDI+Portfolio+Reserves (USD bn)']];
+  gGroupOrder.forEach(g => rows.push([g, cnCumCAB[g], cnFdiNet[g], cnPtfNet[g], cnReserves[g], cnNetPosition[g], cnNetPositionExt[g]]));
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:16},{wch:30},{wch:24},{wch:28},{wch:22},{wch:34},{wch:40}];
+  XLSX.utils.book_append_sheet(wb, ws, 'CAB vs Net Position');
+  const notes = [
+    ['Aequus Economics — Current Account Imbalances vs. Net External Financial Positions'],
+    [''],
+    ['Cumulative CAB', 'Sum of annual current account balances, 2009-2024, by group (IMF WEO; US = -US Deficit series)'],
+    ['Net FDI / Net Portfolio', 'Each group’s claims held abroad minus claims held by others, by instrument, 2024 (IMF CDIS / CPIS bilateral group matrices, intra-group flows excluded — see the FDI and Portfolio flow-map sheets)'],
+    ['Reserve assets', 'Total reserves including gold, 2024 (World Bank WDI / IMF IFS mirror, FI.RES.TOTL.CD)'],
+    ['Headline finding', 'Adding reserves narrows China’s gap vs. cumulative CAB from about -$3.5T to about -$0.1T — its surplus was channelled into reserve accumulation that is largely invisible in bilateral CDIS/CPIS data (its central bank reports ~$0 in bilateral US portfolio holdings). Other groups show very different instrument mixes (e.g., the US combines a small net FDI claim with a very large net portfolio liability), and for most of them the gap versus cumulative CAB widens once reserves are added — pointing to the Other Investment channel (loans, deposits, not covered here) and valuation effects.'],
+    ['Euro Zone', '20 euro-area member economies'],
+    ['EM ex-China', 'World total minus the 41 IMF WEO Advanced Economies minus China'],
+    ['Others', 'Advanced Economies not shown individually (Canada, Switzerland, Australia, Korea, etc.)'],
   ];
-  for (const [label, vals] of series) rows.push([label, ...vals]);
-  const totals = fdiYears.map((_,i) => +(fdiJapan[i]+fdiUK[i]+fdiCanada[i]+fdiEuroCore[i]+fdiEuroHubs[i]+fdiChina[i]+fdiOther[i]+fdiRoW[i]).toFixed(1));
-  rows.push(['TOTAL', ...totals]);
-  rows.push([]);
-  rows.push(['Source: IMF CDIS DIP 12.0.1 (2024 release)']);
-  rows.push(['Metric: Inward FDI, Net (liabilities less assets), all instruments, all entities']);
-  return rows;
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(notes), 'Notes');
+  XLSX.writeFile(wb, 'cab_vs_net_position_2024.xlsx');
 }
 
-function downloadFDI() {
+// ── Q3/Q4 Data: Global FDI & Portfolio bilateral flow maps (Sankey) ──
+const flowPalette = {
+  'United States':  '#000000', 'China': '#e63946', 'Japan': '#f4a261',
+  'Euro Zone': '#2a9d8f', 'United Kingdom': '#457b9d', 'EM ex-China': '#6a994e', 'Others': '#c9c9c9',
+};
+const flowLabels = {};
+gGroupOrder.forEach(g => { flowLabels[g + ' →'] = g; flowLabels['→ ' + g] = g; });
+function flowGroupFromNode(node) { return node.endsWith(' →') ? node.slice(0, -2) : node.slice(2); }
+function buildFlows(matrix) {
+  const flows = [];
+  gGroupOrder.forEach(s => gGroupOrder.forEach(r => {
+    if (s !== r && matrix[s][r] > 0) flows.push({ from: s + ' →', to: '→ ' + r, flow: matrix[s][r] });
+  }));
+  return flows;
+}
+function sankeyOptions() {
+  return {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      tooltip: { callbacks: { label: c => { const d = c.dataset.data[c.dataIndex]; return `${flowLabels[d.from]} → ${flowLabels[d.to]}: $${d.flow.toFixed(1)}B`; } } },
+      legend: { display: false }
+    }
+  };
+}
+function sankeyDataset(label, matrix) {
+  return {
+    label,
+    data: buildFlows(matrix),
+    colorFrom: c => flowPalette[flowGroupFromNode(c.dataset.data[c.dataIndex].from)],
+    colorTo:   c => flowPalette[flowGroupFromNode(c.dataset.data[c.dataIndex].to)],
+    colorMode: 'gradient', labels: flowLabels, size: 'max', borderWidth: 0,
+    column: Object.fromEntries(gGroupOrder.map(g => ['→ ' + g, 1])),
+    priority: Object.fromEntries(gGroupOrder.map((g,i) => [g + ' →', i])),
+  };
+}
+
+// Bilateral FDI matrix 2024, USD billions — sender (claim holder) -> receiver (claim location)
+// Source: IMF CDIS DIP 12.0.1, Outward Direct investment, Net position, all instruments
+const fdiFlowMatrix = {
+  'United States':  { 'Euro Zone': 2560.0, 'Japan': 57.5,   'United Kingdom': 1024.6, 'China': 122.9, 'EM ex-China': 1362.6, 'Others': 1628.7 },
+  'Euro Zone':      { 'United States': 2570.7, 'Japan': 79.0, 'United Kingdom': 1797.2, 'China': 227.2, 'EM ex-China': 2665.1, 'Others': 2034.1 },
+  'Japan':          { 'United States': 778.3, 'Euro Zone': 285.2, 'United Kingdom': 127.4, 'China': 127.6, 'EM ex-China': 289.3, 'Others': 380.6 },
+  'United Kingdom': { 'United States': 705.5, 'Euro Zone': 776.6, 'Japan': 3.6,   'China': 13.0,  'EM ex-China': 289.4, 'Others': 401.0 },
+  'China':          { 'United States': 90.0,  'Euro Zone': 95.3,  'Japan': 7.1,   'United Kingdom': 27.8, 'EM ex-China': 804.5, 'Others': 2115.3 },
+  'EM ex-China':    { 'United States': 414.8, 'Euro Zone': 1698.5, 'Japan': 19.7, 'United Kingdom': 534.2, 'China': 633.9, 'Others': 2156.9 },
+  'Others':         { 'United States': 1992.5, 'Euro Zone': 1607.6, 'Japan': 98.7, 'United Kingdom': 480.9, 'China': 1517.4, 'EM ex-China': 2206.9 },
+};
+
+new Chart(document.getElementById('fdiSankey').getContext('2d'), {
+  type: 'sankey',
+  data: { datasets: [ sankeyDataset('Global FDI Flow Map 2024', fdiFlowMatrix) ] },
+  options: sankeyOptions()
+});
+
+function downloadFDIFlow() {
   const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet(buildFDISheet());
-  ws['!cols'] = [{wch:34}, ...fdiYears.map(()=>({wch:10}))];
-  XLSX.utils.book_append_sheet(wb, ws, 'USA Inward FDI');
-  XLSX.writeFile(wb, 'usa_inward_fdi_2020_2024.xlsx');
+  const rows = [['Sender (claim holder)', ...gGroupOrder]];
+  gGroupOrder.forEach(s => rows.push([s, ...gGroupOrder.map(r => s===r ? '' : (fdiFlowMatrix[s][r] ?? 0))]));
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:18}, ...gGroupOrder.map(()=>({wch:14}))];
+  XLSX.utils.book_append_sheet(wb, ws, 'Global FDI Flow Map 2024');
+  const notes = [
+    ['Aequus Economics — Global FDI Flow Map 2024'],
+    [''],
+    ['Source', 'IMF CDIS DIP 12.0.1 (2024 release)'],
+    ['Metric', 'Outward FDI net position (claims), all instruments, all entities, 2024 — bilateral, sender = claim holder, receiver = where the investment is located'],
+    ['Reading', 'Row = sender / claim holder; Column = receiver / where the investment is located'],
+    ['Euro Zone', '20 euro-area member economies'],
+    ['EM ex-China', 'World total minus the 41 IMF WEO Advanced Economies minus China'],
+    ['Others', 'Advanced Economies not shown individually (Canada, Switzerland, Australia, Korea, etc.)'],
+    ['Note', 'Intra-group bilateral flows excluded (e.g., France→Germany within Euro Zone)'],
+  ];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(notes), 'Notes');
+  XLSX.writeFile(wb, 'global_fdi_flow_map_2024.xlsx');
+}
+
+// Bilateral portfolio investment matrix 2024, USD billions — sender (asset holder) -> receiver (security issuer)
+// Source: IMF CPIS PIP 5.0.0, Portfolio investment, Total investment, Positions (Assets, Total economy/Total economy)
+const portfolioFlowMatrix = {
+  'United States':  { 'Euro Zone': 3781.4, 'Japan': 1189.7, 'United Kingdom': 1636.8, 'China': 246.0, 'EM ex-China': 4649.7, 'Others': 4040.8 },
+  'Euro Zone':      { 'United States': 7544.6, 'Japan': 557.8, 'United Kingdom': 1948.0, 'China': 159.3, 'EM ex-China': 1809.5, 'Others': 2373.2 },
+  'Japan':          { 'United States': 2184.8, 'Euro Zone': 687.3, 'United Kingdom': 147.2, 'China': 41.4, 'EM ex-China': 988.5, 'Others': 348.3 },
+  'United Kingdom': { 'United States': 1523.8, 'Euro Zone': 1441.0, 'Japan': 163.3, 'China': 107.2, 'EM ex-China': 375.1, 'Others': 524.0 },
+  'China':          { 'United States': 331.6, 'Euro Zone': 90.8,  'Japan': 19.9,  'United Kingdom': 36.0,  'EM ex-China': 224.0, 'Others': 699.4 },
+  'EM ex-China':    { 'United States': 6173.4, 'Euro Zone': 1344.6, 'Japan': 336.1, 'United Kingdom': 923.5, 'China': 343.7, 'Others': 771.3 },
+  'Others':         { 'United States': 6867.1, 'Euro Zone': 2681.3, 'Japan': 606.5, 'United Kingdom': 747.0, 'China': 800.0, 'EM ex-China': 1667.2 },
+};
+
+new Chart(document.getElementById('pfSankey').getContext('2d'), {
+  type: 'sankey',
+  data: { datasets: [ sankeyDataset('Global Portfolio Investment Flow Map 2024', portfolioFlowMatrix) ] },
+  options: sankeyOptions()
+});
+
+function downloadPortfolioFlow() {
+  const wb = XLSX.utils.book_new();
+  const rows = [['Sender (asset holder)', ...gGroupOrder]];
+  gGroupOrder.forEach(s => rows.push([s, ...gGroupOrder.map(r => s===r ? '' : (portfolioFlowMatrix[s][r] ?? 0))]));
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:18}, ...gGroupOrder.map(()=>({wch:14}))];
+  XLSX.utils.book_append_sheet(wb, ws, 'Global Portfolio Flow Map 2024');
+  const notes = [
+    ['Aequus Economics — Global Portfolio Investment Flow Map 2024'],
+    [''],
+    ['Source', 'IMF CPIS PIP 5.0.0 (2024 release)'],
+    ['Metric', 'Portfolio investment assets/holdings (total instruments — debt + equity), Total economy / Total economy, 2024 — bilateral, sender = asset holder, receiver = security issuer'],
+    ['Reading', 'Row = sender / asset holder (investor); Column = receiver / security issuer (destination)'],
+    ['Euro Zone', '20 euro-area member economies'],
+    ['EM ex-China', 'World total minus the 41 IMF WEO Advanced Economies minus China'],
+    ['Others', 'Advanced Economies not shown individually (Canada, Switzerland, Australia, Korea, etc.)'],
+    ['Note', 'Intra-group bilateral flows excluded (e.g., France→Germany within Euro Zone)'],
+  ];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(notes), 'Notes');
+  XLSX.writeFile(wb, 'global_portfolio_flow_map_2024.xlsx');
 }
 
 // ── Nav toggle ──────────────────────────────────────────────────────────
