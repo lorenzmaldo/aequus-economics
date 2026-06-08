@@ -1441,6 +1441,9 @@ buildPicker();
 document.getElementById('rangeStart').value = months[0];
 document.getElementById('rangeEnd').value = months[N-1];
 redraw();
+window.togglePicker = togglePicker;
+window.clearAllCountries = clearAllCountries;
+window.applyCustomRange = applyCustomRange;
 window.downloadEER = downloadEERExcel;
 })();
 
