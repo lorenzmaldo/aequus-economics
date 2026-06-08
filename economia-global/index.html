@@ -39,8 +39,16 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-weight:300;background:#ECEFF1;
 .btn-xl{padding:4px 14px;border-radius:12px;border:1px solid #DDD;font-size:11px;font-weight:400;color:#333;background:#F5F5F5;cursor:pointer;white-space:nowrap;font-family:inherit;transition:background .12s}
 .btn-xl:hover{background:#E0E0E0}
 
+/* ── Tab bar ── */
+.tab-bar{display:flex;gap:6px;flex-shrink:0}
+.tab-btn{padding:4px 13px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#555;background:#F5F5F5;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .12s,color .12s,border-color .12s}
+.tab-btn:hover{background:#E0E0E0}
+.tab-btn.active{background:#1A1A2E;color:#fff;border-color:#1A1A2E}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
 /* ── Dashboard grid ── */
-#dashboard{
+.econ-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
   grid-auto-rows:calc((100vh - 42px - 20px) / 2);
@@ -106,15 +114,20 @@ canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
   <div class="tb-sep"></div>
   <span class="tb-title">Econom&#237;a Global</span>
   <div class="tb-sep"></div>
-  <span class="tb-meta" style="font-size:11px;color:#888;font-weight:300">IMF World Economic Outlook, April 2026</span>
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tabBtn-imbalances" onclick="showTab('imbalances')">Global Imbalances</button>
+    <button class="tab-btn" id="tabBtn-eer" onclick="showTab('eer')">Real Exchange Rates</button>
+    <button class="tab-btn" id="tabBtn-policyrates" onclick="showTab('policyrates')">Global Policy Rates</button>
+  </div>
   <div class="tb-spacer"></div>
   <button class="btn-xl" onclick="downloadExcel()">&#11015; Excel</button>
   <div class="tb-sep"></div>
   <div class="tb-meta">Updated June 2026</div>
 </div>
 
-<!-- ── Dashboard grid ── -->
-<div id="dashboard">
+<!-- ── Tab: Global Imbalances ── -->
+<div class="tab-panel active" id="tab-imbalances">
+<div class="econ-grid">
 
   <!-- Q1: Global Current Account Imbalances -->
   <div class="quad">
@@ -244,7 +257,30 @@ canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
     </div>
   </div>
 
-</div><!-- /dashboard -->
+</div><!-- /econ-grid -->
+</div><!-- /tab-imbalances -->
+
+<!-- ── Tab: Real Exchange Rates ── -->
+<div class="tab-panel" id="tab-eer">
+  <div class="econ-grid" style="grid-template-columns:1fr;grid-auto-rows:1fr">
+    <div class="quad placeholder">
+      <span class="ph-icon">&#128201;</span>
+      <span class="ph-label">Real Effective Exchange Rates</span>
+      <span class="ph-sub">BIS EER &mdash; coming soon</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Tab: Global Policy Rates ── -->
+<div class="tab-panel" id="tab-policyrates">
+  <div class="econ-grid" style="grid-template-columns:1fr;grid-auto-rows:1fr">
+    <div class="quad placeholder">
+      <span class="ph-icon">&#127974;</span>
+      <span class="ph-label">Central Bank Policy Rates</span>
+      <span class="ph-sub">BIS CBPOL &mdash; coming soon</span>
+    </div>
+  </div>
+</div>
 
 <script>
 // ── Data: IMF WEO April 2026 ──────────────────────────────────────────
@@ -982,6 +1018,15 @@ function downloadTICExcel() {
 window.downloadTIC = downloadTICExcel;
 
 })();
+
+// ── Tab switcher ─────────────────────────────────────────────────────────
+const tabIds = ['imbalances', 'eer', 'policyrates'];
+function showTab(id) {
+  tabIds.forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('active', t === id);
+    document.getElementById('tabBtn-' + t).classList.toggle('active', t === id);
+  });
+}
 
 // ── Nav toggle ──────────────────────────────────────────────────────────
 function aeToggleNav(btn){ btn.nextElementSibling.classList.toggle('open') }
