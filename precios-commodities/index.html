@@ -154,7 +154,7 @@ footer{text-align:center;padding:28px 16px;background:#f2f2f2;font-size:.76rem;c
   <div class="chart-card">
     <div class="chart-card-hdr">
       <h2>&#128200; Diferencial crudo ecuatoriano vs. WTI</h2>
-      <span class="through-badge">Mar-2026</span>
+      <span class="through-badge" id="through-petro"></span>
     </div>
     <p>WTI menos precio de exportaci&oacute;n EP (USD/bbl) &mdash; valor positivo = Ecuador exporta con descuento al WTI &mdash; l&iacute;nea oscura: media m&oacute;vil 12 meses</p>
     <div class="chart-wrap"><canvas id="c-diff"></canvas></div>
@@ -431,6 +431,7 @@ fetch('data.json')
   if(typeof PETRO_DATA === 'undefined') { console.error('PETRO_DATA not loaded'); return; }
   const P = PETRO_DATA;
   const L = P.dates;
+  document.getElementById('through-petro').textContent = P.updated || L[L.length-1];
   const N = arr => arr.map(v => v === null ? NaN : v);
 
   const base = {
