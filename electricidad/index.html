@@ -134,6 +134,7 @@
   .ref-btn-col-ln:hover{background:#EBEBEB;color:#333}
   .ref-btn-col-ln.ref-col-ln-active{background:#1565C0;color:#fff;font-weight:500}
 
+.ae-nav-bar{display:flex;align-items:center;gap:8px;padding:0 16px;height:36px;background:#fff;border-bottom:1px solid #E0E0E0;flex-shrink:0}
 .ae-nav-home{padding:3px 11px;border-radius:10px;border:1px solid #DDD;font-size:11px;font-weight:500;color:#0f2040;background:#F5F5F5;text-decoration:none;white-space:nowrap;transition:background .12s}
 .ae-nav-home:hover{background:#E0E0E0}
 .ae-nav-dd-wrap{position:relative}
@@ -148,20 +149,22 @@
 </head>
 <body>
 
-<!-- ── Navigation ── -->
-<nav id="navbar">
+<div class="ae-nav-bar">
   <a href="../index.html" class="ae-nav-home">&#8592; Menu</a>
   <div class="ae-nav-dd-wrap">
     <button class="ae-nav-dd-btn" onclick="aeToggleNav(this)">Dashboards &#9660;</button>
     <div class="ae-nav-dd">
+      <a href="../economia-global/index.html">&#127758; Econom&#237;a Global</a>
       <a href="../homicidios/index.html">&#128506;&#xFE0F; Homicidios Ecuador</a>
       <a href="../deuda-interna/index.html">&#128202; Deuda Interna</a>
       <a href="../electricidad/index.html" class="ae-current">&#9889; Electricidad &mdash; CCS</a>
       <a href="../precios-commodities/index.html">&#128722; Diesel y WTI</a>
-      <a href="../sistema-financiero/cross-bank/index.html">&#127974; S.F. &mdash; Cross Bank</a>
+      <a href="../sistema-financiero/cross-bank/index.html">&#127974; Sistema Financiero</a>
     </div>
   </div>
-
+</div>
+<!-- ── Navigation ── -->
+<nav id="navbar">
   <div class="brand">
     <div class="brand-dot"></div>
     <div>
@@ -534,9 +537,6 @@
   }
   setColLnRef(document.querySelector('.ref-btn-col-ln.ref-col-ln-active'));
 </script>
-<script>
-function aeToggleNav(btn){btn.nextElementSibling.classList.toggle('open')}
-document.addEventListener('click',function(e){if(!e.target.closest('.ae-nav-dd-wrap'))document.querySelectorAll('.ae-nav-dd').forEach(function(d){d.classList.remove('open')})});
-</script>
+<script>function aeToggleNav(btn){btn.nextElementSibling.classList.toggle('open')}document.addEventListener('click',function(e){if(!e.target.closest('.ae-nav-dd-wrap'))document.querySelectorAll('.ae-nav-dd').forEach(function(d){d.classList.remove('open')})});</script>
 </body>
 </html>
