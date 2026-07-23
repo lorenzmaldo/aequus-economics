@@ -1346,7 +1346,29 @@ function createExplorer(id, opts) {
       chip.appendChild(btn); row.appendChild(chip);
     });
   }
-  function togglePicker() { document.getElementById('pickerPanel-' + id).classList.toggle('open'); }
+  function togglePicker() {
+    const panel = document.getElementById('pickerPanel-' + id);
+    const opening = !panel.classList.contains('open');
+    panel.classList.toggle('open');
+    if (opening) {
+      // The quad card clips overflow (for its rounded corners), which would cut
+      // this dropdown off partway down — especially in the bottom grid row,
+      // where there's little room left before that clip line. Escaping to a
+      // fixed position (computed from the button's actual screen rect) breaks
+      // it free of that clipping instead of relying on the CSS absolute default.
+      const btn = document.getElementById('pickerBtn-' + id);
+      const r = btn.getBoundingClientRect();
+      const panelWidth = panel.offsetWidth || 600;
+      let left = r.left;
+      if (left + panelWidth > window.innerWidth - 8) left = Math.max(8, window.innerWidth - panelWidth - 8);
+      let top = r.bottom + 6;
+      const panelHeight = panel.offsetHeight || 380;
+      if (top + panelHeight > window.innerHeight - 8) top = Math.max(8, r.top - panelHeight - 6);
+      panel.style.position = 'fixed';
+      panel.style.left = left + 'px';
+      panel.style.top = top + 'px';
+    }
+  }
 
   function syncRangeInputs() {
     const months = data().months;
