@@ -337,6 +337,12 @@ canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
             <button class="range-btn" data-range="10y">10Y</button>
             <button class="range-btn" data-range="max">Max</button>
           </div>
+          <div class="range-custom">
+            <input type="month" id="rangeStart-infl">
+            <span>&ndash;</span>
+            <input type="month" id="rangeEnd-infl">
+            <button class="btn-sm" onclick="applyCustomRangeGM('infl')">Apply</button>
+          </div>
         </div>
       </div>
       <div class="chip-row" id="chipRow-infl"></div>
@@ -373,6 +379,12 @@ canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
             <button class="range-btn" data-range="10y">10Y</button>
             <button class="range-btn" data-range="max">Max</button>
           </div>
+          <div class="range-custom">
+            <input type="month" id="rangeStart-pr">
+            <span>&ndash;</span>
+            <input type="month" id="rangeEnd-pr">
+            <button class="btn-sm" onclick="applyCustomRangeGM('pr')">Apply</button>
+          </div>
         </div>
       </div>
       <div class="chip-row" id="chipRow-pr"></div>
@@ -408,6 +420,12 @@ canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
             <button class="range-btn" data-range="5y">5Y</button>
             <button class="range-btn" data-range="10y">10Y</button>
             <button class="range-btn" data-range="max">Max</button>
+          </div>
+          <div class="range-custom">
+            <input type="month" id="rangeStart-reer">
+            <span>&ndash;</span>
+            <input type="month" id="rangeEnd-reer">
+            <button class="btn-sm" onclick="applyCustomRangeGM('reer')">Apply</button>
           </div>
         </div>
         <div class="toolbar-group">
@@ -452,6 +470,12 @@ canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
             <button class="range-btn" data-range="5y">5Y</button>
             <button class="range-btn" data-range="10y">10Y</button>
             <button class="range-btn" data-range="max">Max</button>
+          </div>
+          <div class="range-custom">
+            <input type="month" id="rangeStart-fx">
+            <span>&ndash;</span>
+            <input type="month" id="rangeEnd-fx">
+            <button class="btn-sm" onclick="applyCustomRangeGM('fx')">Apply</button>
           </div>
         </div>
         <div class="toolbar-group">
@@ -1324,11 +1348,42 @@ function createExplorer(id, opts) {
   }
   function togglePicker() { document.getElementById('pickerPanel-' + id).classList.toggle('open'); }
 
+  function syncRangeInputs() {
+    const months = data().months;
+    const rs = document.getElementById('rangeStart-' + id), re = document.getElementById('rangeEnd-' + id);
+    if (rs) rs.value = months[state.range.start];
+    if (re) re.value = months[state.range.end];
+  }
+
   function setPresetRange(key) {
     const months = data().months; const lastIdx = months.length - 1;
     if (key === 'max') { state.range = { start: 0, end: lastIdx }; }
     else { const years = parseInt(key,10); state.range = { start: Math.max(0, lastIdx - years*12 + 1), end: lastIdx }; }
     document.querySelectorAll('#rangePresets-' + id + ' .range-btn').forEach(b => b.classList.toggle('active', b.dataset.range === key));
+    syncRangeInputs();
+    redraw();
+  }
+
+  function applyCustomRange() {
+    const months = data().months;
+    const sv = document.getElementById('rangeStart-' + id).value;
+    const ev = document.getElementById('rangeEnd-' + id).value;
+    let si = months.indexOf(sv); if (si === -1) si = months.findIndex(m => m >= sv); if (si === -1) si = 0;
+    let ei = months.indexOf(ev); if (ei === -1) { const r = [...months].reverse().findIndex(m => m <= ev); ei = r === -1 ? months.length-1 : months.length-1-r; }
+    if (si > ei) { const t = si; si = ei; ei = t; }
+    state.range = { start: si, end: ei };
+    document.querySelectorAll('#rangePresets-' + id + ' .range-btn').forEach(b => b.classList.remove('active'));
+    redraw();
+  }
+
+  function jumpRangeToNormDate() {
+    const months = data().months;
+    let bi = months.indexOf(state.normDate);
+    if (bi === -1) bi = months.findIndex(m => m >= state.normDate);
+    if (bi === -1) bi = 0;
+    state.range = { start: bi, end: months.length - 1 };
+    document.querySelectorAll('#rangePresets-' + id + ' .range-btn').forEach(b => b.classList.remove('active'));
+    syncRangeInputs();
     redraw();
   }
 
@@ -1434,6 +1489,7 @@ function createExplorer(id, opts) {
     const defaults = opts.defaultCodes(d.regions);
     defaults.forEach(c => { if (d.series[c]) { state.selected.add(c); colorFor(c); } });
     buildPicker();
+    syncRangeInputs();
     document.querySelectorAll('#rangePresets-' + id + ' .range-btn').forEach(b => b.addEventListener('click', () => setPresetRange(b.dataset.range)));
     if (opts.allowNormalize) {
       const cb = document.getElementById('normOn-' + id);
@@ -1443,8 +1499,12 @@ function createExplorer(id, opts) {
       // decades ago, and basing an index on a pre-redenomination value blows up.
       if (N > 0) di.value = d.months[state.range.start];
       state.normDate = d.months[state.range.start];
-      cb.addEventListener('change', () => { state.normOn = cb.checked; redraw(); });
-      di.addEventListener('change', () => { state.normDate = di.value; if (state.normOn) redraw(); });
+      // Choosing/changing the base date (or turning Normalize on) jumps the
+      // visible range to start right at that date, so the 100-mark sits at the
+      // left edge — the user can then move the range later without affecting
+      // the normalization anchor itself (see buildDatasets/baseIndexFor above).
+      cb.addEventListener('change', () => { state.normOn = cb.checked; if (state.normOn) jumpRangeToNormDate(); else redraw(); });
+      di.addEventListener('change', () => { state.normDate = di.value; if (state.normOn) jumpRangeToNormDate(); });
     }
     redraw();
   }
@@ -1453,7 +1513,7 @@ function createExplorer(id, opts) {
 
   return {
     setMode(key) { state.fxMode = key; buildPicker(); redraw(); },
-    togglePicker, clearAll, downloadExcel,
+    togglePicker, clearAll, downloadExcel, applyCustomRange,
   };
 }
 
@@ -1495,6 +1555,7 @@ explorers.fx = createExplorer('fx', {
 window.togglePickerGM = id => explorers[id].togglePicker();
 window.clearAllGM = id => explorers[id].clearAll();
 window.downloadGM = id => explorers[id].downloadExcel();
+window.applyCustomRangeGM = id => explorers[id].applyCustomRange();
 window.setFxModeGM = mode => {
   document.getElementById('fxBtnNeer').classList.toggle('active', mode==='neer');
   document.getElementById('fxBtnXru').classList.toggle('active', mode==='xru');
