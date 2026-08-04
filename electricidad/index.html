@@ -185,6 +185,9 @@
   <button class="tab-btn" data-target="panel-annual">
     <span class="tab-icon">📅</span> Annual Series
   </button>
+  <button class="tab-btn" data-target="panel-elnino-map">
+    <span class="tab-icon">🌊</span> El Niño Mapping
+  </button>
 
   <div class="spacer"></div>
   <div class="brand-right">WorldClim CRU-TS 4.09 &nbsp;·&nbsp; ARCONEL 2026 &nbsp;·&nbsp; NOAA ONI</div>
@@ -343,6 +346,11 @@
   <iframe src="annual_animation.html" id="annual-frame"></iframe>
 </div>
 
+<!-- ── Panel 4: El Nino Mapping ── -->
+<div class="tab-panel" id="panel-elnino-map">
+  <iframe src="el_nino_mapping.html" id="elninomap-frame" style="border:none;width:100%;display:block;"></iframe>
+</div>
+
 <!-- ── Lightbox ── -->
 <div id="lightbox">
   <button id="lb-close">✕</button>
@@ -375,6 +383,10 @@
         const fr = document.getElementById('celec-frame');
         fr.style.height = (window.innerHeight - 52) + 'px';
       }
+      if (btn.dataset.target === 'panel-elnino-map') {
+        const fr = document.getElementById('elninomap-frame');
+        fr.style.height = (window.innerHeight - 52) + 'px';
+      }
     });
   });
 
@@ -384,6 +396,7 @@
     document.getElementById('anim-frame').style.height   = h;
     document.getElementById('annual-frame').style.height = h;
     document.getElementById('celec-frame').style.height  = h;
+    document.getElementById('elninomap-frame').style.height = h;
   }
   window.addEventListener('resize', setFrameHeight);
   setFrameHeight();
