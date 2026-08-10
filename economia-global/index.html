@@ -1765,12 +1765,12 @@ function createExplorer(id, opts) {
   };
 }
 
-const latinAmericaCodes = regions => ['US', ...(regions.find(r=>r.name==='Latin America & Caribbean')||{members:[]}).members.map(m=>m.code)];
+const defaultCountryCodes = () => ['US', 'MX', 'BR', 'CL', 'CO', 'PE'];
 
 explorers.infl = createExplorer('infl', {
   getData: () => cpiData,
   yLabel: '% year-on-year', fmt: v => v.toFixed(2) + '%',
-  defaultCodes: latinAmericaCodes,
+  defaultCodes: defaultCountryCodes,
   title: 'Consumer Price Inflation', downloadName: 'inflation_export.xlsx', downloadSheet: 'Inflation (YoY %)',
   sourceNote: 'Bank for International Settlements, Consumer Prices statistics (WS_LONG_CPI), year-on-year % change, monthly.',
 });
@@ -1778,7 +1778,7 @@ explorers.infl = createExplorer('infl', {
 explorers.pr = createExplorer('pr', {
   getData: () => cbpolData,
   yLabel: '% per year', fmt: v => v.toFixed(2) + '%', stepped: true,
-  defaultCodes: latinAmericaCodes,
+  defaultCodes: defaultCountryCodes,
   title: 'Central Bank Policy Rates', downloadName: 'policy_rates_export.xlsx', downloadSheet: 'Policy rates',
   sourceNote: 'Bank for International Settlements, Central Bank Policy Rates (WS_CBPOL), monthly, end of period, per cent per year.',
 });
@@ -1786,7 +1786,7 @@ explorers.pr = createExplorer('pr', {
 explorers.reer = createExplorer('reer', {
   getData: () => reerData,
   yLabel: 'Index, 2020 = 100', fmt: v => v.toFixed(1), allowNormalize: true, allowInvert: true,
-  defaultCodes: latinAmericaCodes,
+  defaultCodes: defaultCountryCodes,
   title: 'Real Effective Exchange Rate', downloadName: 'reer_export.xlsx', downloadSheet: 'REER',
   sourceNote: 'Bank for International Settlements, Effective Exchange Rate statistics (WS_EER), Real, broad basket, monthly, index 2020=100.',
 });
@@ -1794,7 +1794,7 @@ explorers.reer = createExplorer('reer', {
 explorers.fx = createExplorer('fx', {
   getData: (mode) => mode === 'xru' ? xruData : neerData,
   yLabel: 'Index, 2020 = 100', fmt: v => v.toFixed(1), allowNormalize: true,
-  defaultCodes: latinAmericaCodes,
+  defaultCodes: defaultCountryCodes,
   title: 'Nominal Exchange Rate', downloadName: 'nominal_fx_export.xlsx', downloadSheet: 'Nominal FX',
   sourceNote: 'Bank for International Settlements: Effective Exchange Rate statistics (WS_EER), Nominal, broad basket; or US Dollar Exchange Rates (WS_XRU), local currency per USD \u2014 see selected chart mode.',
   modes: ['neer', 'xru'],
