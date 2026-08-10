@@ -430,13 +430,14 @@ canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
           </div>
         </div>
         <div class="toolbar-group">
+          <label class="norm-toggle"><input type="checkbox" id="invertOn-reer" title="Flip so a falling line = appreciation, matching the nominal FX quadrant's convention"> Invert</label>
           <label class="norm-toggle"><input type="checkbox" id="normOn-reer"> Normalize</label>
           <input type="month" id="normDate-reer" class="norm-date" title="Base date (index = 100)">
         </div>
       </div>
       <div class="chip-row" id="chipRow-reer"></div>
       <div class="chart-area"><canvas id="chart-reer"></canvas></div>
-      <div class="qnote">Source: BIS Effective Exchange Rate statistics (WS_EER), Real, broad basket &nbsp;|&nbsp; Normalize rebases each line to 100 at the chosen date, for reading appreciation/depreciation since then.</div>
+      <div class="qnote">Source: BIS Effective Exchange Rate statistics (WS_EER), Real, broad basket &nbsp;|&nbsp; REER rises = appreciation; Invert flips that (10,000/REER) so a falling line = appreciation instead, matching the nominal-FX convention &nbsp;|&nbsp; Normalize rebases each line to 100 at the chosen date, for reading appreciation/depreciation since then.</div>
     </div>
 
     <!-- Q4: Nominal FX -->
@@ -1475,7 +1476,7 @@ function createExplorer(id, opts) {
     colorAssignment: {}, colorIdx: 0,
     selected: new Set(),
     range: { start: 0, end: 0 },
-    normOn: false, normDate: null,
+    normOn: false, normDate: null, invertOn: false,
     chart: null,
     fxMode: opts.modes ? opts.modes[0] : null,
   };
@@ -1639,11 +1640,18 @@ function createExplorer(id, opts) {
     Array.from(state.selected).forEach(code => {
       const color = colorFor(code);
       const raw = d.series[code] || [];
-      let values = raw.slice(state.range.start, state.range.end + 1);
+      // Invert first, then normalize on the inverted series — the two commute
+      // (normalize(1/x) === 1/normalize(x) up to the same 100-anchor), so this
+      // order is equivalent to the other and keeps baseIndexFor working on
+      // whichever series is actually being displayed.
+      const workingRaw = (opts.allowInvert && state.invertOn)
+        ? raw.map(v => (v === null || v === undefined || v === 0) ? null : 10000 / v)
+        : raw;
+      let values = workingRaw.slice(state.range.start, state.range.end + 1);
       if (opts.allowNormalize && state.normOn) {
-        const bi = baseIndexFor(raw);
-        if (bi >= 0 && raw[bi]) {
-          const base = raw[bi];
+        const bi = baseIndexFor(workingRaw);
+        if (bi >= 0 && workingRaw[bi]) {
+          const base = workingRaw[bi];
           values = values.map(v => (v === null || v === undefined) ? null : (v/base)*100);
         } else {
           values = values.map(() => null);
@@ -1663,7 +1671,8 @@ function createExplorer(id, opts) {
   function redraw() {
     const { months, datasets } = buildDatasets();
     const normalized = opts.allowNormalize && state.normOn;
-    const yLabel = normalized ? 'Index (base = 100)' : opts.yLabel;
+    const inverted = opts.allowInvert && state.invertOn;
+    const yLabel = normalized ? 'Index (base = 100)' : (inverted ? 'Index, inverted (2020=100 basis)' : opts.yLabel);
     const fmt = normalized ? (v => v.toFixed(1)) : opts.fmt;
     if (state.chart) state.chart.destroy();
     state.chart = new Chart(document.getElementById('chart-' + id).getContext('2d'), {
@@ -1726,6 +1735,10 @@ function createExplorer(id, opts) {
     buildPicker();
     syncRangeInputs();
     document.querySelectorAll('#rangePresets-' + id + ' .range-btn').forEach(b => b.addEventListener('click', () => setPresetRange(b.dataset.range)));
+    if (opts.allowInvert) {
+      const icb = document.getElementById('invertOn-' + id);
+      icb.addEventListener('change', () => { state.invertOn = icb.checked; redraw(); });
+    }
     if (opts.allowNormalize) {
       const cb = document.getElementById('normOn-' + id);
       const di = document.getElementById('normDate-' + id);
@@ -1772,7 +1785,7 @@ explorers.pr = createExplorer('pr', {
 
 explorers.reer = createExplorer('reer', {
   getData: () => reerData,
-  yLabel: 'Index, 2020 = 100', fmt: v => v.toFixed(1), allowNormalize: true,
+  yLabel: 'Index, 2020 = 100', fmt: v => v.toFixed(1), allowNormalize: true, allowInvert: true,
   defaultCodes: latinAmericaCodes,
   title: 'Real Effective Exchange Rate', downloadName: 'reer_export.xlsx', downloadSheet: 'REER',
   sourceNote: 'Bank for International Settlements, Effective Exchange Rate statistics (WS_EER), Real, broad basket, monthly, index 2020=100.',
