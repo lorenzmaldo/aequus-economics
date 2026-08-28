@@ -90,6 +90,19 @@ body {
   border-radius: 7px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.q4-chart-wrap {
+  padding: 8px 14px 0;
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+#q4-chart {
+  flex: 1;
+  display: flex;
+  min-height: 0;
 }
 .panel-hdr {
   background: #1d3557;
@@ -328,7 +341,7 @@ tbody tr:hover           td:first-child { background: #eef3f9 !important; }
         <button class="dbtn"        id="q4-btn-cumulative" onclick="setQ4('cumulative')">Cumulative</button>
         <span style="margin-left:auto;font-size:10px;color:#8896a8" id="q4RangeLbl"></span>
       </div>
-      <div style="padding:8px 14px 0">
+      <div class="q4-chart-wrap">
         <div id="q4-chart"></div>
       </div>
       <div id="q4-legend" style="padding:6px 14px 10px;display:flex;flex-wrap:wrap;gap:5px 12px"></div>
@@ -653,7 +666,7 @@ function renderStackedBar(containerId, dates, series) {
   const slotW  = CW / n;
   const barW   = Math.max(2.5, slotW * 0.74);
 
-  let svg = `<svg viewBox="0 0 ${VW} ${VH}" style="width:100%;height:auto;display:block">`;
+  let svg = `<svg viewBox="0 0 ${VW} ${VH}" preserveAspectRatio="none" style="width:100%;height:100%;display:block">`;
 
   // Y gridlines + labels
   const ticks = niceTicks(minY, maxY, 5);
