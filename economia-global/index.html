@@ -1945,8 +1945,17 @@ function createUSQuad(id, opts) {
     const wb = XLSX.utils.book_new();
     const header = ['Date']; opts.lines.forEach(l => header.push(l.label));
     const rows = [header];
-    d.dates.forEach((dt, i) => rows.push([dt, ...opts.lines.map(l => (d.series[l.key] || [])[i])]));
+    // Real Excel date cells (not text) so pasting into existing workbooks matches
+    // their date-typed columns instead of leaving text strings that merely look like dates.
+    d.dates.forEach((dt, i) => {
+      const [y, mo, da] = dt.split('-').map(Number);
+      rows.push([new Date(Date.UTC(y, mo - 1, da)), ...opts.lines.map(l => (d.series[l.key] || [])[i])]);
+    });
     const ws = XLSX.utils.aoa_to_sheet(rows);
+    for (let r = 1; r < rows.length; r++) {
+      const ref = XLSX.utils.encode_cell({ r, c: 0 });
+      if (ws[ref]) ws[ref].z = 'yyyy\\-mm\\-dd';
+    }
     ws['!cols'] = [{ wch: 11 }, ...opts.lines.map(() => ({ wch: 16 }))];
     XLSX.utils.book_append_sheet(wb, ws, opts.downloadSheet);
     const notes = [
