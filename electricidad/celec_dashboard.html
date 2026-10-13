@@ -348,6 +348,26 @@ Chart.register({
   }
 });
 
+// ── Q2 Oct-Mar season shading plugin ───────────────────────────────────────────
+Chart.register({
+  id:'q2SeasonShade',
+  beforeDraw(chart) {
+    if(chart.canvas.id!=='ch-q2') return;
+    const {ctx,chartArea:{top,bottom,left,right},scales:{x}}=chart;
+    if(!x) return;
+    const minYear=new Date(x.min).getUTCFullYear();
+    const maxYear=new Date(x.max).getUTCFullYear();
+    ctx.save();
+    ctx.fillStyle='rgba(33,150,243,.06)';
+    for(let y=minYear-1; y<=maxYear; y++){
+      const px0=Math.max(left, x.getPixelForValue(`${y}-10-01`));
+      const px1=Math.min(right, x.getPixelForValue(`${y+1}-03-31`));
+      if(px1>px0) ctx.fillRect(px0, top, px1-px0, bottom-top);
+    }
+    ctx.restore();
+  }
+});
+
 // ── Charts registry ───────────────────────────────────────────────────────────
 const CH={};
 function kill(id){if(CH[id]){CH[id].destroy();delete CH[id];}}
