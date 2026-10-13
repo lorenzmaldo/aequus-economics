@@ -358,7 +358,7 @@ Chart.register({
     const minYear=new Date(x.min).getUTCFullYear();
     const maxYear=new Date(x.max).getUTCFullYear();
     ctx.save();
-    ctx.fillStyle='rgba(33,150,243,.06)';
+    ctx.fillStyle='rgba(255,193,7,.08)';
     for(let y=minYear-1; y<=maxYear; y++){
       const px0=Math.max(left, x.getPixelForValue(Date.UTC(y,9,1)));
       const px1=Math.min(right, x.getPixelForValue(Date.UTC(y+1,2,31)));
