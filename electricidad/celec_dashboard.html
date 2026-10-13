@@ -164,7 +164,7 @@ canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
       <button class="cbtn"        data-g="q2-sm" data-w="7">7d</button>
       <button class="cbtn"        data-g="q2-sm" data-w="15">15d</button>
       <button class="cbtn"        data-g="q2-sm" data-w="30">30d</button>
-      <button class="cbtn"        data-g="q2-sm" data-w="0">Monthly</button>
+      <button class="cbtn"        data-g="q2-sm" data-w="0">Monthly (3mo avg)</button>
     </div>
     <div class="chart-area"><canvas id="ch-q2"></canvas></div>
   </div>
@@ -434,7 +434,7 @@ function buildQ2() {
   kill('q2');
   const isMonthly = (S.q2_sm === 0);
   const hyd = isMonthly ? src(true) : src();
-  const w   = isMonthly ? 1 : S.q2_sm;  // monthly = no additional smoothing
+  const w   = isMonthly ? 3 : S.q2_sm;  // monthly = 3-month trailing average
   const norm= S.q2_view==='norm';
   const sel = S.q2_ser;
 
