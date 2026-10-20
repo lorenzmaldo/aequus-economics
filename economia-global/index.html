@@ -1947,9 +1947,15 @@ function createUSQuad(id, opts) {
     const rows = [header];
     // Real Excel date cells (not text) so pasting into existing workbooks matches
     // their date-typed columns instead of leaving text strings that merely look like dates.
+    // Written as a raw serial number (not a JS Date object) — SheetJS reads a Date's
+    // calendar fields back out in the viewer's LOCAL timezone, which silently rolls the
+    // date back a day for anyone west of UTC (e.g. Ecuador, UTC-5). A plain number with
+    // a date number format sidesteps that conversion entirely.
+    const EXCEL_EPOCH_UTC = Date.UTC(1899, 11, 30);
     d.dates.forEach((dt, i) => {
       const [y, mo, da] = dt.split('-').map(Number);
-      rows.push([new Date(Date.UTC(y, mo - 1, da)), ...opts.lines.map(l => (d.series[l.key] || [])[i])]);
+      const serial = Math.round((Date.UTC(y, mo - 1, da) - EXCEL_EPOCH_UTC) / 86400000);
+      rows.push([serial, ...opts.lines.map(l => (d.series[l.key] || [])[i])]);
     });
     const ws = XLSX.utils.aoa_to_sheet(rows);
     for (let r = 1; r < rows.length; r++) {
